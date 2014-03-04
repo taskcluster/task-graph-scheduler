@@ -1,0 +1,53 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Definition",
+  "description":  "Definition of a task-graph that can be scheduled",
+  "type":               "object",
+  "properties": {
+    "version": {
+      "title":          "Version",
+      "description":    "Task-graph definition version",
+      "enum":           ["0.2.0"]
+    },
+    "routing": {
+      "title":          "Routing Key",
+      "description":    "Task-graph specific routing key, may contain dots (`.`) for arbitrary sub-routes",
+      "type":           "string",
+      "maxLength":      10
+    },
+    "tasks": {
+      "title":                  "Tasks",
+      "description":            "Mapping from task-labels to task definition and scheduling preferences, such as number of _reruns_ to attempt.",
+      "type":                   "object",
+      "additionalProperties": {
+        "title":                "Task",
+        "description":          "Representation of a tasks in the task-graph",
+        "type":                 "object",
+        "properties": {
+          "required": {
+            "title":            "Required tasks",
+            "description":      "List of required task labels",
+            "type":             "array",
+            "items": {
+              "title":          "Required task-label",
+              "description":    "Label for task that is required to be _successfully completed_ before this task is scheduled.",
+              "type":           "string",
+              "maxLength":      255
+            }
+          },
+          "reruns": {
+            "title":            "Re-runs",
+            "description":      "Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.",
+            "type":             "integer",
+            "minimum":          0,
+            "maximum":          999
+          },
+          "task":               {"$ref": "http://schemas.taskcluster.net/v1/task.json#"}
+        }
+      }
+    }
+  },
+  "additionalProperties":       false,
+  "required":                   ["version", "routing", "tasks"]
+}
