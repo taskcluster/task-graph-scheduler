@@ -373,6 +373,9 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
     property:         'taskId',
     type:             'string'
   }, {
+    key:              'label',
+    type:             'string'
+  }, {
     key:              'rerunsAllowed',
     type:             'number'
   }, {
@@ -429,10 +432,10 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
     key:              'requires',
     type:             'json'
   }, {
-    key:              'nameMapping',
-    type:             'json'
-  }, {
     key:              'state',
+    type:             'string'
+  }, {
+    key:              'routing',
     type:             'string'
   }
 ].map(normalizeEntityMappingEntry));

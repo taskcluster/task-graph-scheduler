@@ -26,7 +26,7 @@ exports.TestTaskGraph = function(test){
         SomeTaskLabel:    'SomeTaskId'
       },
       state:              'running',
-      deadline:           new Date()
+      routing:            ""
     });
   });
 

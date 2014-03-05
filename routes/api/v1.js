@@ -23,6 +23,9 @@ api.declare({
     "TODO: Write documentation"
   ].join('\n')
 }, function(req, res) {
+
+
+  var taskGraphId =
   res.reply({});
 
   /*
