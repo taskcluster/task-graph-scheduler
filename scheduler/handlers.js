@@ -1,6 +1,7 @@
-
-
-
+var Promise     = require('promise');
+var Task        = require('./data').Task;
+var TaskGraph   = require('./data').TaskGraph;
+var debug       = require('debug')('scheduler:handlers');
 
 /*
   Task completed successfully (B):
@@ -23,6 +24,23 @@
 
 */
 
+
+
+/**
+ * Handle notifications of failed messages
+ * `events.setup()` will take care of subscribing to a queue, bind to exchanges
+ * and invoke this method with messages. This method should return a promise
+ * of success, if the promise fails the message will be rejected and requeued.
+ */
+exports.failed = function(message) {};
+
+/**
+ * Handle notifications of completed messages
+ * `events.setup()` will take care of subscribing to a queue, bind to exchanges
+ * and invoke this method with messages. This method should return a promise
+ * of success, if the promise fails the message will be rejected and requeued.
+ */
+exports.completed = function(message) {};
 
 
 // Task completed successfully

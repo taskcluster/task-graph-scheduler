@@ -1,9 +1,14 @@
 var Promise   = require('promise');
 var nconf     = require('nconf');
 var amqp      = require('amqp');
+var request   = require('superagent');
 var validate  = require('../utils/validate');
+var assert    = request('assert');
+var debug     = require('debug')('scheduler:events');
+var handlers  = require('./handlers');
 
-var debug   = require('debug')('scheduler:events');
+// Number of message to be working on concurrently
+var PREFETCH_COUNT = 5;
 
 // AMQP connection created by events.setup()
 var _conn = null;
@@ -21,18 +26,32 @@ var _exchanges = null;
  * matter to me.
  */
 exports.setup = function() {
-  debug("Connecting to AMQP server");
-
   // Connection created
   var conn = null;
 
+  // Fetch connection string from queue
+  var fetched_connection_string = new Promise(function(accept, reject) {
+    request
+      .get(nconf.get('queue:baseUrl') + '/v1/settings/amqp-connection-string')
+      .end(function(res) {
+        if (!res.ok) {
+          return reject(res.body);
+        }
+        assert(res.body.url, "amqp-connection-string reply missing url!");
+        accept(res.body.url);
+      });
+  });
+
   // Get a promise that we'll be connected
-  var connected = new Promise(function(accept, reject) {
-    // Create connection
-    conn = amqp.createConnection(nconf.get('amqp'));
-    conn.on('ready', function() {
-      debug("Connection to AMQP is now ready for work");
-      accept();
+  var connected = fetched_connection_string(function(connectionString) {
+    return new Promise(function(accept, reject) {
+      debug("Connecting to AMQP server");
+      // Create connection
+      conn = amqp.createConnection({url: connectionString});
+      conn.on('ready', function() {
+        debug("Connection to AMQP is now ready for work");
+        accept();
+      });
     });
   });
 
@@ -40,7 +59,7 @@ exports.setup = function() {
   var exchanges = {};
 
   // When we're connected, let's defined exchanges
-  var setup_completed = connected.then(function() {
+  var exchanges_declared = connected.then(function() {
     // For each desired exchange we create a promise that the exchange will be
     // declared (we just carry name to function below as name, enjoy)
     var exchanges_declared_promises = [
@@ -67,6 +86,87 @@ exports.setup = function() {
 
     // Return a promise that all exchanges have been configured
     return Promise.all(exchanges_declared_promises);
+  });
+
+  // Declare queue
+  var queue = null;
+  var queue_declared = exchanges_declared.then(function() {
+    return new Promise(function(accept, reject) {
+      var queueName = nconf.get('scheduler:amqpQueueName');
+      var hasName   = queueName !== undefined;
+      queue = that.conn.queue(queueName || '', {
+        passive:                    false,
+        durable:                    hasName,
+        exclusive:                  !hasName,
+        autoDelete:                 !hasName,
+        closeChannelOnUnsubscribe:  false
+      }, function() {
+        accept();
+      });
+    });
+  });
+
+
+  // Subscribe to messages
+  var subscribe_to_messages = queue_declared.then(function() {
+    // Handle incoming messages and send them to handers
+    queue.subscribe({
+      ack:                true,
+      prefetchCount:      PREFETCH_COUNT
+    }, function(message, headers, deliveryInfo, raw) {
+      // WARNING: Raw is not documented, but exposed and it is the only way
+      // to handle more than one message at the time, as queue.shift() only
+      // allows us to acknowledge the last message.
+
+      // Check that this is for an exchange we want
+      var m = /v1\/queue:task-(completed|failed)/.exec(deliveryInfo.exchange)
+      if (!m) {
+        debug("ERROR: Received message from exchange %s, which we bind to",
+              deliveryInfo.exchange);
+        raw.acknowledge();
+        return;
+      }
+
+      // Handle the message
+      handlers[m[1]](message).then(function() {
+        // Acknowledge that message is completed
+        raw.acknowledge();
+      }).catch(function(err) {
+        var requeue = true;
+        // Don't requeue if this has been tried before
+        if (deliveryInfo.redelivered) {
+          requeue = false;
+          debug(
+            "ERROR: Failed to handle message %j due to err: " +
+            "%s, as JSON: %j, now rejecting message without requeuing!",
+            message, err, err, err.stack
+          );
+        } else {
+          debug(
+            "WARNING: Failed to handle message %j due to err: " +
+            "%s, as JSON: %j, now requeuing message",
+            message, err, err, err.stack
+          );
+        }
+        raw.reject(requeue);
+      });
+    });
+  });
+
+  // Bind queue to exchanges
+  var setup_completed = subscribe_to_messages.then(function() {
+    var id = nconf.get('scheduler:taskGraphSchdulerId');
+    assert(id.length <= 22, "taskGraphSchdulerId is too long!");
+    var routingPattern = '*.*.*.*.*.*.' + id + '.#';
+    return new Promise(function(accept, reject) {
+      // Only the last of the two binds will emit an event... this is crazy, but
+      // I don't want to port to another AMQP library just yet.
+      queue.bind('v1/queue:task-completed', routingPattern);
+      queue.bind('v1/queue:task-failed', routingPattern, function() {
+        debug('Bound queue to exchanges');
+        accept();
+      });
+    });
   });
 
   return setup_completed.then(function() {
@@ -117,16 +217,10 @@ exports.publish = function(exchange, message) {
       }
     }
 
-    // Construct routing key from task status structure in message
-    // as well as runId, workerGroup and workerId, which are present in the
-    // message if relevant.
+    // Construct routing key from task-graph status structure in message
     var routingKey = [
-      message.status.taskId,
-      message.runId         || '_',
-      message.workerGroup   || '_',
-      message.workerId      || '_',
-      message.status.provisionerId,
-      message.status.workerType,
+      message.status.schedulerId,
+      message.status.taskGraphId,
       message.status.routing
     ].join('.');
 
@@ -139,9 +233,9 @@ exports.publish = function(exchange, message) {
         reject(new Error("Failed to send message"));
       } else {
         debug(
-          "Published message to %s with taskId: %s",
+          "Published message to %s with taskGraphId: %s",
           exchange,
-          message.status.taskId
+          message.status.taskGraphId
         );
         accept();
       }

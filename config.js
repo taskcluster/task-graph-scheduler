@@ -17,7 +17,17 @@ var DEFAULT_CONFIG_VALUES = {
     validateOutgoing:               true,
 
     // Azure task graph table name
-    azureTaskGraphTable:            "TaskGraphs"
+    azureTaskGraphTable:            "TaskGraphs",
+
+    // Queue to be used on AMQP, leave it undefined to use an exclusive,
+    // auto-delete queue (use; `tash-graph-scheduler-input` in production)
+    amqpQueueName:                  undefined,
+
+    // Task-Graph Scheduler Identifier used in routing for tasks submitted, this
+    // is therefore limited to 22 characters. In production we'll use
+    // `task-graph-scheduler`, do **NOT** use this for testing, as your messages
+    // would be sent to the scheduler too.
+    taskGraphSchdulerId:            "jonasfj-test-tgs"
   },
 
   // Queue configuration

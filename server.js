@@ -1,3 +1,9 @@
+// Load configuration
+var config  = require('./config');
+
+// Load configuration
+config.load();
+
 // Dependencies
 var express                         = require('express');
 var http                            = require('http');
@@ -9,12 +15,6 @@ var PersonaStrategy                 = require('passport-persona').Strategy;
 var events                          = require('./scheduler/events');
 var validate                        = require('./utils/validate');
 var debug                           = require('debug')('server');
-
-// Load configuration
-var config  = require('./config');
-
-// Load configuration
-config.load();
 
 // Load a little monkey patching
 require('./utils/spread-promise').patch();

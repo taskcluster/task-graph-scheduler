@@ -16,7 +16,7 @@ var api = module.exports = new utils.API({
 api.declare({
   method:     'post',
   route:      '/task-graph/new',
-  input:      'http://schemas.taskcluster.net/v1/task-graph.json#',
+  input:      'http://schemas.taskcluster.net/v1/scheduler:task-graph.json#',
   output:     null,
   title:      "Create new task-graph",
   desc: [

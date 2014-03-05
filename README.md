@@ -9,7 +9,7 @@ graph scheduler.
 
 {
   // Routing post-fix for all messages regarding this task-graph or it's tasks
-  routing;        '...',  // limit 10 chars
+  routing:        '...',  // limit 10 chars
 
   // Task definitions as mapping from taskLabel to task-node which contains a
   // task definition...
@@ -43,18 +43,19 @@ Entities: (task-graph)
   partitionKey:           <task-graph-id>
   rowKey:                 task-graph
   requires:               [<taskId>, <taskId>, ...]
-  nameMapping:            JSON mapping from taskLabel -> taskId
   state:                  running | blocked | finished
+  routing:                <taskGraph.routing>
 
 Entities:
   partitionKey:           <taskGraphId>
   rowKey:                 tasks/<taskId>
+  label:                  <taskLabel>
   rerunsAllowed:          5
   rerunsLeft:             4
   deadline:               Datetime
   requires:               ['<taskId>, <taskId>, ...']
   dependents:             ['<taskId>, ..., task-graph']
-  resolution:             {resultUrl?, logsUrl?, failed}
+  resolution:             {resultUrl?, logsUrl?, success}
 
 Operations:
   Add tasks during execution (A):
@@ -79,3 +80,57 @@ Operations:
     - Set 'task-graph' entry state to blocked
     - Post message that task-graph is now blocked
     - Ack message
+
+
+Task-Graph Status Structure
+---------------------------
+
+{
+  schedulerId:        <schedulerId>
+  taskGraphId:        <compressed uuid>,
+  state:              running | blocked | finished
+  routing:            <taskGraph.routing>
+}
+
+
+RabbitMQ Exchanges
+==================
+We have the following **topic exchanges**:
+
+  Exchange                            | Message Occur When
+  -----------------------------------:|-----------------------------------------
+  `v1/scheduler:task-graph-running`   | A task-graph is submitted
+  `v1/scheduler:task-graph-blocked`   | A task-graph becomes blocked
+  `v1/scheduler:task-graph-finished`  | A task-graph is finished successfully
+
+Message Routing Key
+-------------------
+All messages have the same **routing key format**, which is a dot (`.`)
+separated list of identifiers, defined as follows:
+
+  1. `schedulerId`, identifier for the task-graph scheduler to which the
+      task-graph was submitted. For production this is always
+      `task-graph-scheduler`.
+  2. `taskGraphId`, task-graph identifier as assigned at submission.
+  3. `taskGraph.routing`, the `routing` property from the submitted task-graph,
+      **note** that this property may contain additional dots.
+
+Task Message Routing Key Prefixes
+---------------------------------
+All task submitted by the task-scheduler will be submitted with `task.routing`
+prefixed, such that the `task.routing` will be:
+`<schedulerId>.<taskGraphId>.<taskGraph.routing>.<task.routing>`.
+
+This means that messages sent by queue for any task scheduled by the task-graph
+scheduler will have the following routing key:
+
+  1. `task-id`
+  2. `run-id`
+  3. `worker-group`
+  4. `worker-id`
+  5. `provisioner-id`
+  6. `worker-type`
+  7. `schedulerId`
+  8. `taskGraphId`
+  9. `taskGraph.routing` (May contain additional dots)
+  7. `task.routing` (May contain additional dots)
