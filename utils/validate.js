@@ -10,6 +10,11 @@ var validator = null;
 
 /** Create validator and load schemas, returns a promise of success */
 var setup = function() {
+  // Return immediately if already loaded
+  if(validator) {
+    return Promise.from(undefined);
+  }
+
   // Create validator
   validator = new JaySchema();
 
