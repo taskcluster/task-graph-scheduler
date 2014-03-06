@@ -48,13 +48,13 @@ Entities: (task-graph)
 
 Entities:
   partitionKey:           <taskGraphId>
-  rowKey:                 tasks/<taskId>
+  rowKey:                 <taskId>
   label:                  <taskLabel>
   rerunsAllowed:          5
   rerunsLeft:             4
   deadline:               Datetime
   requires:               ['<taskId>, <taskId>, ...']
-  dependents:             ['<taskId>, ..., task-graph']
+  dependents:             ['<taskId>, ..., ] // if emoty check task-graph
   resolution:             {resultUrl?, logsUrl?, success}
 
 Operations:

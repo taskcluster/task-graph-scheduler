@@ -63,9 +63,9 @@ exports.setup = function() {
     // For each desired exchange we create a promise that the exchange will be
     // declared (we just carry name to function below as name, enjoy)
     var exchanges_declared_promises = [
-      'v1/scheduler:task-graph-running',
-      'v1/scheduler:task-graph-blocked',
-      'v1/scheduler:task-graph-finished'
+      'scheduler/v1/task-graph-running',
+      'scheduler/v1/task-graph-blocked',
+      'scheduler/v1/task-graph-finished'
     ].map(function(name) {
       // Promise that exchange with `name` will be created
       return new Promise(function(accept, reject) {
@@ -161,8 +161,8 @@ exports.setup = function() {
     return new Promise(function(accept, reject) {
       // Only the last of the two binds will emit an event... this is crazy, but
       // I don't want to port to another AMQP library just yet.
-      queue.bind('v1/queue:task-completed', routingPattern);
-      queue.bind('v1/queue:task-failed', routingPattern, function() {
+      queue.bind('queue/v1/task-completed', routingPattern);
+      queue.bind('queue/v1/task-failed', routingPattern, function() {
         debug('Bound queue to exchanges');
         accept();
       });
@@ -202,7 +202,8 @@ exports.publish = function(exchange, message) {
   return new Promise(function(accept, reject) {
     // Check if we're supposed to validate out-going messages
     if (nconf.get('queue:validateOutgoing')) {
-      var schema = 'http://schemas.taskcluster.net/' + exchange + '.json#';
+      var schema = 'http://schemas.taskcluster.net/scheduler/v1/' + exchange
+                    + '-message.json#';
       var errors = validate(message, schema);
       // Reject message if there's any errors
       if (errors) {
@@ -225,7 +226,7 @@ exports.publish = function(exchange, message) {
     ].join('.');
 
     // Publish message to RabbitMQ
-    _exchanges[exchange].publish(routingKey, message, {
+    _exchanges['scheduler/v1/' + exchange].publish(routingKey, message, {
       contentType:        'application/json',
       deliveryMode:       2,
     }, function(err) {

@@ -5,6 +5,7 @@ var assert          = require('assert');
 var util            = require('util');
 var Promise         = require('promise');
 var debug           = require('debug')('scheduler:data');
+var slugid          = require('../utils/slugid');
 
 // See https://github.com/gluwer/azure-table-node
 
@@ -15,7 +16,7 @@ azureTable.setDefaultClient(nconf.get('azureTableCredentials'));
 var client    = azureTable.getDefaultClient();
 
 /** Date types supported by serialize/deserialize */
-var dataTypes = ['string', 'number', 'json', 'date'];
+var dataTypes = ['string', 'number', 'json', 'date', 'slugid'];
 
 /** Normalize and validate a entity mapping entry */
 var normalizeEntityMappingEntry = function(entry) {
@@ -59,6 +60,11 @@ var serialize = function(properties, entry) {
     );
     return value;
   }
+  // Serialize slug to uuid which azure tables can encode efficiently
+  if (type == 'slugid') {
+    assert(value.length == 22, "Slugs should always be 22 chars long");
+    return slugid.decode(slug);
+  }
   throw new Error("Can't serialize unknown type: '" + type + "' for " +
                   "property: '" + entry.property + "'!");
 };
@@ -87,6 +93,11 @@ var deserialize = function(entity, entry) {
       "key " + entry.key
     );
     return value;
+  }
+  if (type == 'slugid') {
+    assert(typeof(value) == 'string', "Slugids should be returned from " +
+           "azure as strings");
+    return slugid.encode(value);
   }
   debug("Entry with unknown type: ", entry);
   throw new Error("Can't deserialize unknown type: '" + type + "' for " +
@@ -367,11 +378,11 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
   {
     key:              'PartitionKey',
     property:         'taskGraphId',
-    type:             'string'
+    type:             'slugid'
   }, {
     key:              'RowKey',
     property:         'taskId',
-    type:             'string'
+    type:             'slugid'
   }, {
     key:              'label',
     type:             'string'
@@ -420,7 +431,7 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
   {
     key:              'PartitionKey',
     property:         'taskGraphId',
-    type:             'string'
+    type:             'slugid'
   }, {
     // This is always hardcoded to 'task-graph', so we can use the same table
     // for both TaskGraph and Task entities. This ensures that we can make

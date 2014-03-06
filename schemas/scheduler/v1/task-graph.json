@@ -1,5 +1,5 @@
 {
-  "id":           "http://schemas.taskcluster.net/v1/scheduler:task-graph.json#",
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task-Graph Definition",
   "description":  "Definition of a task-graph that can be scheduled",
@@ -10,12 +10,7 @@
       "description":    "Task-graph definition version",
       "enum":           ["0.2.0"]
     },
-    "routing": {
-      "title":          "Routing Key",
-      "description":    "Task-graph specific routing key, may contain dots (`.`) for arbitrary sub-routes",
-      "type":           "string",
-      "maxLength":      10
-    },
+    "routing":          {"$const": "routing"},
     "tasks": {
       "title":                  "Tasks",
       "description":            "Mapping from task-labels to task definition and scheduling preferences, such as number of _reruns_ to attempt.",

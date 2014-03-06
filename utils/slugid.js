@@ -5,7 +5,7 @@ exports.encode = function(uuid_) {
   var bytes   = uuid.parse(uuid_);
   var base64  = (new Buffer(bytes)).toString('base64');
   var slug = base64
-              .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
+              .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
               .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
               .replace(/=/g,  '');  // Drop '==' padding
   return slug;

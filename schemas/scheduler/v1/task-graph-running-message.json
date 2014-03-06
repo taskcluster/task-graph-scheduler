@@ -1,0 +1,13 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "New Task-Graph Message",
+  "description":  "Messages as posted to `scheduler/v1/task-graph-running` informing the world that a new task-graph have been submitted.",
+  "type":         "object",
+  "properties": {
+    "version":    {"$const": "message-version"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"}
+  },
+  "additionalProperties":       false,
+  "required":                   ["version", "status"]
+}

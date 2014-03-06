@@ -1,0 +1,27 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Status Structure",
+  "description":  "A representation of **task-graph status** as known by the scheduler, without the state of all individual tasks.",
+  "type":               "object",
+  "properties": {
+    "taskGraphId": {
+      "description":    "Unique task-graph identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
+      "type":           "string",
+      "pattern":        {"$const": "slugid-pattern"}
+    },
+    "schedulerId": {
+      "description":    "Unique identifier for task-graph scheduler managing the given task-graph",
+      "type":           "string",
+      "minLength":      {"$const": "identifier-min-length"},
+      "maxLength":      {"$const": "identifier-max-length"},
+      "pattern":        {"$const": "identifier-pattern"}
+    },
+    "state":            {"$const": "state"},
+    "routing":          {"$const": "routing"}
+  },
+  "additionalProperties":   false,
+  "required": [
+    "taskGraphId", "schedulerId", "state", "routing"
+  ]
+}

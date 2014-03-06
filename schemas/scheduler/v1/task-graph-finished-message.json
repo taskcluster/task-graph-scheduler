@@ -1,0 +1,13 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Finished Message",
+  "description":  "Message that all tasks in a task-graph have now completed successfully and the graph is _finished_.",
+  "type":         "object",
+  "properties": {
+    "version":    {"$const": "message-version"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"}
+  },
+  "additionalProperties":       false,
+  "required":                   ["version", "status"]
+}
