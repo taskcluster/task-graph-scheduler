@@ -1,12 +1,13 @@
-var nconf   = require('nconf');
-var utils   = require('./utils');
-var slugid  = require('../utils/slugid');
-var Promise = require('promise');
-var _       = require('lodash');
-var request = require('superagent');
-var debug   = require('debug')('routes:api:v1');
-
-var events  = require('../../scheduler/events');
+var nconf       = require('nconf');
+var utils       = require('./utils');
+var slugid      = require('../utils/slugid');
+var Promise     = require('promise');
+var _           = require('lodash');
+var Task        = require('./data').Task;
+var TaskGraph   = require('./data').TaskGraph;
+var debug       = require('debug')('routes:api:v1');
+var request     = require('superagent');
+var events      = require('../../scheduler/events');
 
 /** API end-point for version v1/ */
 var api = module.exports = new utils.API({
@@ -241,6 +242,7 @@ api.declare({
           .post(nconf.get('queue:baseUrl') + endpoint)
           .end(function(res) {
             if (!res.ok) {
+              debug("Failed to schedule initial task: %s", task.taskId);
               return reject(res.body);
             }
             accept(res.body);
@@ -252,10 +254,13 @@ api.declare({
   // Post event on AMQP
   var event_posted = tasks_scheduled.then(function() {
     return events.publish('task-graph-running', {
-      schedulerId:        nconf.get('scheduler:taskGraphSchdulerId'),
-      taskGraphId:        taskGraphId,
-      state:              'running',
-      routing:            input.routing
+      version:              '0.2.0',
+      status: {
+        schedulerId:        nconf.get('scheduler:taskGraphSchdulerId'),
+        taskGraphId:        taskGraphId,
+        state:              'running',
+        routing:            input.routing
+      }
     });
   });
 

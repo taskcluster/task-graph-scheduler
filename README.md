@@ -55,7 +55,7 @@ Entities:
   deadline:               Datetime
   requires:               ['<taskId>, <taskId>, ...']
   dependents:             ['<taskId>, ..., ] // if emoty check task-graph
-  resolution:             {resultUrl?, logsUrl?, success}
+  resolution:             {resultUrl?, logsUrl?, success, completed} | null
 
 Operations:
   Add tasks during execution (A):
