@@ -1,4 +1,4 @@
-var uuid      = require('uuid');
+var slugid    = require('../utils/slugid');
 var server    = require('../server');
 var data      = require('../scheduler/data');
 var debug     = require('debug')('test:data_test');
@@ -10,7 +10,7 @@ exports.TestTaskGraph = function(test){
 
   // Generate task graph id, do this top-level so we can reload and test that
   // entity exists
-  var taskGraphId = uuid.v4();
+  var taskGraphId = slugid.v4();
 
   // Ensure that the taskGraph table is created
   var table_created = data.ensureTable(data.TaskGraph);

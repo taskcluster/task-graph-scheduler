@@ -3,7 +3,7 @@ var Task        = require('./data').Task;
 var TaskGraph   = require('./data').TaskGraph;
 var debug       = require('debug')('scheduler:handlers');
 var request     = require('superagent');
-var events      = require('../../scheduler/events');
+var events      = require('./events');
 var _           = require('lodash');
 var nconf       = require('nconf');
 
@@ -51,7 +51,7 @@ var scheduleDependentTasks = function(task) {
         }
       });
     });
-  });
+  }));
 };
 
 

@@ -30,13 +30,11 @@ var normalizeEntityMappingEntry = function(entry) {
 };
 
 /** Serialize type for storage in azure table service */
-var serialize = function(properties, entry) {
-  assert(properties !== undefined,  "properties must be given to serialize");
+var serialize = function(value, entry) {
   assert(entry !== undefined,       "entry must be given to serialize");
 
-  // Find type and value
+  // Find type
   var type    = entry.type;
-  var value   = properties[entry.property];
 
   // Serialize string
   if (type == 'string' || type == 'number') {
@@ -63,17 +61,16 @@ var serialize = function(properties, entry) {
   // Serialize slug to uuid which azure tables can encode efficiently
   if (type == 'slugid') {
     assert(value.length == 22, "Slugs should always be 22 chars long");
-    return slugid.decode(slug);
+    return slugid.decode(value);
   }
   throw new Error("Can't serialize unknown type: '" + type + "' for " +
                   "property: '" + entry.property + "'!");
 };
 
 /** Deserialize type from storage in azure table service */
-var deserialize = function(entity, entry) {
+var deserialize = function(value, entry) {
   // Find type and value
   var type    = entry.type;
-  var value   = entity[entry.key];
 
   if (type == 'string' || type == 'number') {
     assert(
@@ -118,7 +115,7 @@ var Entity = function(entity) {
   // Set properties on shadow object
   var that = this;
   this.__mapping.forEach(function(entry) {
-    that.__shadow[entry.property] = deserialize(entity, entry);
+    that.__shadow[entry.property] = deserialize(entity[entry.key], entry);
   });
 };
 
@@ -162,7 +159,7 @@ Entity.create = function(properties, constructor) {
     // Construct entity from properties
     var entity = {};
     constructor.prototype.__mapping.forEach(function(entry) {
-      entity[entry.key] = serialize(properties, entry);
+      entity[entry.key] = serialize(properties[entry.property], entry);
     });
 
     // Insert entity
@@ -192,6 +189,15 @@ Entity.create = function(properties, constructor) {
  * This method return a promise for the subclass instance.
  */
 Entity.load = function(partitionKey, rowKey, constructor) {
+  // Serialize partitionKey and rowKey
+  constructor.prototype.__mapping.forEach(function(entry) {
+    if (entry.key == 'PartitionKey') {
+      partitionKey = serialize(partitionKey, entry);
+    }
+    if (entry.key == 'RowKey') {
+      rowKey = serialize(rowKey, entry);
+    }
+  });
   return new Promise(function(accept, reject) {
     client.getEntity(
       constructor.prototype.__tableName,
@@ -244,8 +250,8 @@ Entity.prototype.modify = function(modifier) {
       // Add changes to entityChanges
       var changed = false;
       that.__mapping.forEach(function(entry) {
-        var newValue = serialize(properties, entry)
-        var oldValue = serialize(shadow, entry);
+        var newValue = serialize(properties[entry.property], entry)
+        var oldValue = serialize(shadow[entry.property], entry);
         if (newValue != oldValue) {
           entityChanges[entry.key] = newValue;
           changed = true;
@@ -287,10 +293,10 @@ Entity.prototype.modify = function(modifier) {
       var partitionKey, rowKey;
       that.__mapping.forEach(function(entry) {
         if (entry.key == 'PartitionKey') {
-          partitionKey = serialize(shadow, entry);
+          partitionKey = serialize(shadow[entry.property], entry);
         }
         if (entry.key == 'RowKey') {
-          rowKey = serialize(shadow, entry);
+          rowKey = serialize(shadow[entry.property], entry);
         }
       });
 
@@ -311,7 +317,7 @@ Entity.prototype.modify = function(modifier) {
     }).then(function(entity) {
       // Update shadow object to new values
       that.__mapping.forEach(function(entry) {
-        shadow[entry.property] = deserialize(entity, entry);
+        shadow[entry.property] = deserialize(entity[entry.key], entry);
       });
 
       // Update etag

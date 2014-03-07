@@ -5,7 +5,7 @@
   "description":  "Response for a request to create a task-graph, you can find `taskGraphId` in the task-graph status structure, under the `status` key.",
   "type":         "object",
   "properties": {
-    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"}
   },
   "additionalProperties":       false,
   "required":                   ["status"]

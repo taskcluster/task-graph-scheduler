@@ -11,11 +11,11 @@ var path        = require('path');
 var testCases = [
   {
     path:     'schemas/task-graph-example.json',
-    schema:   'http://schemas.taskcluster.net/v1/scheduler:task-graph.json#',
+    schema:   'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
     success:  true,
   }, {
     path:     'schemas/invalid-task-graph-example.json',
-    schema:   'http://schemas.taskcluster.net/v1/scheduler:task-graph.json#',
+    schema:   'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
     success:  false,
   }
 ];

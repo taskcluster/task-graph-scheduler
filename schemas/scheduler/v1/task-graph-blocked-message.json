@@ -11,7 +11,7 @@
       "description":  "Unique `taskId` that is blocking this task-graph from completion.",
       "type":         "string",
       "pattern":      {"$const": "slugid-pattern"}
-    },
+    }
   },
   "additionalProperties":       false,
   "required":                   ["version", "status", "taskId"]
