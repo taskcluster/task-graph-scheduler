@@ -8,6 +8,7 @@ var TaskGraph   = require('../../scheduler/data').TaskGraph;
 var debug       = require('debug')('routes:api:v1');
 var request     = require('superagent');
 var events      = require('../../scheduler/events');
+var assert      = require('assert');
 
 /** API end-point for version v1/ */
 var api = module.exports = new utils.API({
@@ -36,7 +37,7 @@ api.declare({
     var taskNode = input.tasks[taskLabel];
     taskNode.dependents = [];
     taskNode.taskLabel  = taskLabel;
-    taskNodes.push(taskNodes);
+    taskNodes.push(taskNode);
   }
 
   // Add dependent tasks to dependents, and check errors
@@ -159,7 +160,7 @@ api.declare({
 
     // Routing prefix for task.routing
     var routingPrefix = [
-      nconf.get('taskGraphSchdulerId'),
+      nconf.get('scheduler:taskGraphSchdulerId'),
       taskGraphId,
       input.routing
     ].join('.');
@@ -222,7 +223,7 @@ api.declare({
         label:            taskNode.taskLabel,
         rerunsAllowed:    taskNode.reruns,
         rerunsLeft:       taskNode.reruns,
-        deadline:         taskNode.task.deadline,
+        deadline:         new Date(taskNode.task.deadline),
         requires:         taskNode.requires,
         dependents:       taskNode.dependents,
         resolution:       null

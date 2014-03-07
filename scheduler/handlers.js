@@ -6,6 +6,7 @@ var request     = require('superagent');
 var events      = require('./events');
 var _           = require('lodash');
 var nconf       = require('nconf');
+var assert      = require('assert');
 
 /** Schedule task with the queue, **note** this is an idempotent operation */
 var scheduleTask = function(taskId) {
@@ -25,12 +26,13 @@ var scheduleTask = function(taskId) {
 
 var scheduleDependentTasks = function(task) {
   // Let's load, modify and schedule all dependent tasks that are ready
-  return Promse.all(task.dependents.map(function(dependentTaskId) {
+  return Promise.all(task.dependents.map(function(dependentTaskId) {
     // First we load the dependent task
     return Task.load(
       task.taskGraphId,
       dependentTaskId
     ).then(function(dependentTask) {
+      assert(dependentTask.taskId == dependentTaskId, "Just a sanity check");
       // Then we modify the dependent task
       return dependentTask.modify(function() {
         // If the successfully completed task isn't required by the dependent
@@ -40,14 +42,14 @@ var scheduleDependentTasks = function(task) {
         }
 
         // Now we know the successful task is blocking, we remove it
-        this.requires = _.without(this.requires, taskId);
+        this.requires = _.without(this.requires, task.taskId);
 
         // If no other tasks are blocked the dependent tasks then we should
         // schedule it.
         if (this.requires.length == 0) {
           // Note, that on the queue this is an idempotent operation, so it is
           // not a problem if we do this more than once.
-          return scheduleTask(depTask.taskId);
+          return scheduleTask(dependentTaskId);
         }
       });
     });
@@ -89,6 +91,7 @@ var checkTaskGraphFinished = function(taskGraphId, successfullTaskId) {
       // If the task-graph really just did finish now, then we're responsible
       // for sending an event
       if (taskGraphFinishedNow) {
+        assert(taskGraph.state == 'finished', "taskGraph should be finished!");
         return events.publish('task-graph-finished', {
           version:          '0.2.0',
           status: {
@@ -123,11 +126,12 @@ var blockTaskGraph = function (taskGraphId, blockingTaskId) {
     }).then(function() {
       // Publish event if the task-graph was running and we set it to blocked
       if (wasRunning) {
+        assert(taskGraph.state == 'blocked', "taskGraph should be blocked now");
         return events.publish('task-graph-blocked', {
           version:          '0.2.0',
           status: {
             taskGraphId:    taskGraphId,
-            schedulerId:    nconf.get('taskGraphSchdulerId'),
+            schedulerId:    nconf.get('scheduler:taskGraphSchdulerId'),
             state:          'blocked',
             routing:        taskGraph.routing
           },
@@ -144,13 +148,13 @@ var rerunTask = function(task) {
   // Check if there is a rerun available
   var has_rerun_available = true;
   var task_modified = task.modify(function() {
-    has_rerun_available = this.rerunsLeft < this.rerunsAllowed;
+    has_rerun_available = this.rerunsLeft > 0;
     if (has_rerun_available) {
-      this.rerunsLeft += 1;
+      this.rerunsLeft -= 1;
     }
   });
 
-  return task_modified,then(function() {
+  return task_modified.then(function() {
     // If there was a rerun available, we ask the queue to rerun it
     if (has_rerun_available) {
       return new Promise(function(accept, reject) {
@@ -179,8 +183,9 @@ var rerunTask = function(task) {
  */
 exports.failed = function(message) {
   // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.status.routing.split('.')[7];
+  var taskGraphId     = message.status.routing.split('.')[1];
   var blockingTaskId  = message.status.taskId;
+  debug("Got message that taskId: %s failed", blockingTaskId);
 
   // Load the blocked task
   var task_loaded = Task.load(taskGraphId, blockingTaskId);
@@ -224,8 +229,9 @@ exports.failed = function(message) {
  */
 exports.completed = function(message) {
   // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.status.routing.split('.')[7];
+  var taskGraphId     = message.status.routing.split('.')[1];
   var completedTaskId  = message.status.taskId;
+  debug("Got message that taskId: %s completed", completedTaskId);
 
   // Fetch result.json and determine if the task completed successfully
   var got_success = new Promise(function(accept, reject) {
@@ -236,7 +242,8 @@ exports.completed = function(message) {
           debug("Failed to fetch result.json for taskId: %s", completedTaskId);
           return reject(res.body);
         }
-        accept(res.body.result.success);
+        debug("Fetched result.json from %s got %j", completedTaskId, res.body);
+        accept(res.body.result.exitCode == 0);
       });
   });
 
@@ -249,6 +256,7 @@ exports.completed = function(message) {
     task_loaded
   ).spread(function(success, task) {
     var task_modified = task.modify(function() {
+      debug("Modifying task.resolution of: %s", task.taskId);
       // We can go from:
       //  - `null` (unresolved) to unsuccessful completion,
       //  - unsuccessful task to successful completed task.
@@ -282,13 +290,16 @@ exports.completed = function(message) {
       if (success) {
         if (task.dependents.length != 0) {
           // There are dependent tasks, when we should try to schedule those
+          debug("Scheduling dependent tasks");
           return scheduleDependentTasks(task);
         } else {
           // If there is no dependent tasks then we should check if the task-
           // graph is finished
+          debug("Checking if task graph has finished");
           return checkTaskGraphFinished(taskGraphId, task.taskId);
         }
       } else {
+        debug("Requesting a task to be rerun if possible");
         return rerunTask(task);
       }
     });

@@ -31,7 +31,7 @@ var normalizeEntityMappingEntry = function(entry) {
 
 /** Serialize type for storage in azure table service */
 var serialize = function(value, entry) {
-  assert(entry !== undefined,       "entry must be given to serialize");
+  assert(entry !== undefined, "entry must be given to serialize");
 
   // Find type
   var type    = entry.type;
@@ -60,6 +60,7 @@ var serialize = function(value, entry) {
   }
   // Serialize slug to uuid which azure tables can encode efficiently
   if (type == 'slugid') {
+    assert(value, "Slugs can't be empty string!!!");
     assert(value.length == 22, "Slugs should always be 22 chars long");
     return slugid.decode(value);
   }
@@ -415,7 +416,7 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
 
 /** Create task */
 Task.create = function(properties) {
-  return Entity.create(prototype, Task);
+  return Entity.create(properties, Task);
 };
 
 /** Load task */

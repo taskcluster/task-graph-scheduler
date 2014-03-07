@@ -3,7 +3,7 @@ var nconf     = require('nconf');
 var amqp      = require('amqp');
 var request   = require('superagent');
 var validate  = require('../utils/validate');
-var assert    = request('assert');
+var assert    = require('assert');
 var debug     = require('debug')('scheduler:events');
 var handlers  = require('./handlers');
 
@@ -43,12 +43,12 @@ exports.setup = function() {
   });
 
   // Get a promise that we'll be connected
-  var connected = fetched_connection_string(function(connectionString) {
+  var connected = fetched_connection_string.then(function(connectionString) {
     return new Promise(function(accept, reject) {
       debug("Connecting to AMQP server");
       // Create connection
       conn = amqp.createConnection({url: connectionString});
-      conn.on('ready', function() {
+      conn.once('ready', function() {
         debug("Connection to AMQP is now ready for work");
         accept();
       });
@@ -94,13 +94,14 @@ exports.setup = function() {
     return new Promise(function(accept, reject) {
       var queueName = nconf.get('scheduler:amqpQueueName');
       var hasName   = queueName !== undefined;
-      queue = that.conn.queue(queueName || '', {
+      queue = conn.queue(queueName || '', {
         passive:                    false,
         durable:                    hasName,
         exclusive:                  !hasName,
         autoDelete:                 !hasName,
         closeChannelOnUnsubscribe:  false
       }, function() {
+        debug("Declared AMQP queue");
         accept();
       });
     });
@@ -117,9 +118,11 @@ exports.setup = function() {
       // WARNING: Raw is not documented, but exposed and it is the only way
       // to handle more than one message at the time, as queue.shift() only
       // allows us to acknowledge the last message.
+      debug("Received message from: %s with routingKey: %s",
+            deliveryInfo.exchange, deliveryInfo.routingKey);
 
       // Check that this is for an exchange we want
-      var m = /v1\/queue:task-(completed|failed)/.exec(deliveryInfo.exchange)
+      var m = /queue\/v1\/task-(completed|failed)/.exec(deliveryInfo.exchange)
       if (!m) {
         debug("ERROR: Received message from exchange %s, which we bind to",
               deliveryInfo.exchange);
@@ -128,29 +131,37 @@ exports.setup = function() {
       }
 
       // Handle the message
-      handlers[m[1]](message).then(function() {
-        // Acknowledge that message is completed
-        raw.acknowledge();
-      }).catch(function(err) {
-        var requeue = true;
-        // Don't requeue if this has been tried before
-        if (deliveryInfo.redelivered) {
-          requeue = false;
-          debug(
-            "ERROR: Failed to handle message %j due to err: " +
-            "%s, as JSON: %j, now rejecting message without requeuing!",
-            message, err, err, err.stack
-          );
-        } else {
-          debug(
-            "WARNING: Failed to handle message %j due to err: " +
-            "%s, as JSON: %j, now requeuing message",
-            message, err, err, err.stack
-          );
-        }
-        raw.reject(requeue);
-      });
+      try {
+        handlers[m[1]](message).then(function() {
+          // Acknowledge that message is completed
+          debug("Acknowledging successfully handled message!");
+          raw.acknowledge();
+        }).catch(function(err) {
+          var requeue = true;
+          // Don't requeue if this has been tried before
+          if (deliveryInfo.redelivered) {
+            requeue = false;
+            debug(
+              "ERROR: Failed to handle message %j due to err: " +
+              "%s, as JSON: %j, now rejecting message without requeuing!",
+              message, err, err, err.stack
+            );
+          } else {
+            debug(
+              "WARNING: Failed to handle message %j due to err: " +
+              "%s, as JSON: %j, now requeuing message",
+              message, err, err, err.stack
+            );
+          }
+          raw.reject(requeue);
+        });
+      }
+      catch (err) {
+        debug("Failed to handle message: %j, with err: %s",
+              message, err, err.stack);
+      }
     });
+    debug("Subscribed to messages from queue");
   });
 
   // Bind queue to exchanges
@@ -159,6 +170,7 @@ exports.setup = function() {
     assert(id.length <= 22, "taskGraphSchdulerId is too long!");
     var routingPattern = '*.*.*.*.*.*.' + id + '.#';
     return new Promise(function(accept, reject) {
+      debug('Binding to exchanges');
       // Only the last of the two binds will emit an event... this is crazy, but
       // I don't want to port to another AMQP library just yet.
       queue.bind('queue/v1/task-completed', routingPattern);

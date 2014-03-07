@@ -56,8 +56,14 @@ var DEFAULT_CONFIG_VALUES = {
   }
 };
 
+var loaded = false;
 /** Load configuration */
 exports.load = function() {
+  if (loaded) {
+    return;
+  }
+  loaded = true;
+
   // Load configuration from command line arguments, if requested
   nconf.argv();
 

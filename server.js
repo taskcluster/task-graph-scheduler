@@ -125,7 +125,7 @@ exports.launch = function() {
     return validate.setup();
   }).then(function() {
     // Publish schemas if necessary
-    if (nconf.get('queue:publishSchemas')) {
+    if (nconf.get('scheduler:publishSchemas')) {
       return require('./utils/render-schema').publish();
     }
   }).then(function() {
