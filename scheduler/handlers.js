@@ -94,12 +94,7 @@ var checkTaskGraphFinished = function(taskGraphId, successfullTaskId) {
         assert(taskGraph.state == 'finished', "taskGraph should be finished!");
         return events.publish('task-graph-finished', {
           version:          '0.2.0',
-          status: {
-            taskGraphId:    taskGraphId,
-            schedulerId:    nconf.get('scheduler:taskGraphSchdulerId'),
-            state:          'finished',
-            routing:        taskGraph.routing
-          }
+          status:           taskGraph.status()
         });
       }
     });
@@ -129,12 +124,7 @@ var blockTaskGraph = function (taskGraphId, blockingTaskId) {
         assert(taskGraph.state == 'blocked', "taskGraph should be blocked now");
         return events.publish('task-graph-blocked', {
           version:          '0.2.0',
-          status: {
-            taskGraphId:    taskGraphId,
-            schedulerId:    nconf.get('scheduler:taskGraphSchdulerId'),
-            state:          'blocked',
-            routing:        taskGraph.routing
-          },
+          status:           taskGraph.status(),
           taskId:           blockingTaskId
         });
       }

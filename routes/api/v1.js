@@ -212,9 +212,15 @@ api.declare({
     });
   });
 
+  // Get the create taskGraph instance
+  var taskGraph = null;
+  var got_task_graph_instance = task_graph_created.then(function(taskGraph_) {
+    taskGraph = taskGraph_;
+  })
+
   // When all tasks have been posted to S3 next step is to create the task
   // entities
-  var task_entities_created = task_graph_created.then(function() {
+  var task_entities_created = got_task_graph_instance.then(function() {
     debug("Creating %s Task entities", taskNodes.length);
     return Promise.all(taskNodes.map(function(taskNode) {
       return Task.create({
@@ -256,24 +262,14 @@ api.declare({
   var event_posted = tasks_scheduled.then(function() {
     return events.publish('task-graph-running', {
       version:              '0.2.0',
-      status: {
-        schedulerId:        nconf.get('scheduler:taskGraphSchdulerId'),
-        taskGraphId:        taskGraphId,
-        state:              'running',
-        routing:            input.routing
-      }
+      status:               taskGraph.status()
     });
   });
 
   // Reply with task graph scheduler status
   return event_posted.then(function() {
     res.reply({
-      status: {
-        schedulerId:      nconf.get('scheduler:taskGraphSchdulerId'),
-        taskGraphId:      taskGraphId,
-        state:            'running',
-        routing:          input.routing
-      }
+      status:               taskGraph.status()
     });
   });
 });

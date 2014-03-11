@@ -481,6 +481,16 @@ TaskGraph.load = function(taskGraphId) {
   return Entity.load(taskGraphId, 'task-graph', TaskGraph);
 };
 
+/** Get task-graph status structure */
+TaskGraph.prototype.status = function() {
+  return {
+    taskGraphId:    this.taskGraphId,
+    schedulerId:    nconf.get('scheduler:taskGraphSchdulerId'),
+    state:          this.state,
+    routing:        this.routing
+  };
+};
+
 // Export TaskGraph
 exports.TaskGraph = TaskGraph;
 
