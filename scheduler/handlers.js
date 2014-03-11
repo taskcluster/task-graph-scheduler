@@ -143,14 +143,24 @@ var blockTaskGraph = function (taskGraphId, blockingTaskId) {
   });
 };
 
-/** Rerun a task or block the taskgraph if all reruns are used */
-var rerunTask = function(task) {
+/**
+ * Rerun a task or block the taskgraph if all reruns are used
+ * Called with a task-completed message.
+ */
+var rerunTaskOrBlock = function(task, message) {
   // Check if there is a rerun available
   var has_rerun_available = true;
   var task_modified = task.modify(function() {
     has_rerun_available = this.rerunsLeft > 0;
     if (has_rerun_available) {
       this.rerunsLeft -= 1;
+    } else {
+      this.resolution = {
+        completed:      true,
+        success:        false,
+        resultUrl:      message.resultUrl,
+        logsUrl:        message.logsUrl
+      };
     }
   });
 
@@ -193,22 +203,10 @@ exports.failed = function(message) {
   // When modify the task resolution
   var task_modified = task_loaded.then(function(task) {
     return task.modify(function() {
-      if (this.resolution === null) {
-        this.resolution = {
-          success:      false,
-          completed:    false
-        };
-      } else if (this.resolution.success) {
-        debug("ERROR: We're getting failed result from a successfully " +
-              "completed task! This implies that we've been rerun a " +
-              "successfully completed task! Investigate taskGraphId: %s and " +
-              "taskId: %s", taskGraphId, blockingTaskId);
-        throw new Error(
-          "Somehow getting failed result from a successfully completed task!"
-        );
-      }
-      // Note, if the task was completed unsuccessfully before, then we won't
-      // overwrite that resolution to just mark it as failed...
+      this.resolution = {
+        success:      false,
+        completed:    false
+      };
     });
   });
 
@@ -255,39 +253,18 @@ exports.completed = function(message) {
     got_success,
     task_loaded
   ).spread(function(success, task) {
-    var task_modified = task.modify(function() {
-      debug("Modifying task.resolution of: %s", task.taskId);
-      // We can go from:
-      //  - `null` (unresolved) to unsuccessful completion,
-      //  - unsuccessful task to successful completed task.
-      //  - any state to successfully completed task.
-      // Specifically, we permit a task to transition from successfully
-      // completed to unsuccessfully completed. This shouldn't happen as we
-      // won't rerun successful tasks, but we better check it anyway.
-      if (this.resolution === null || success || !this.resolution.success) {
+    if (success) {
+      var task_modified = task.modify(function() {
         this.resolution = {
           completed:      true,
-          success:        success,
+          success:        true,
           resultUrl:      message.resultUrl,
           logsUrl:        message.logsUrl
         };
-      } else if (!success && this.resolution.success) {
-        debug(
-          "ERROR: Got message of unsuccessfully completed task, that have "+
-          "been successfully completed before. Investigate taskGraphId: %s " +
-          "and taskId: %s, runId: %s", taskGraphId, completedTaskId,
-          message.runId
-        );
-        throw new Error(
-          "ERROR: Got message of unsuccessfully completed task, that have "+
-          "been successfully completed before."
-        );
-      }
-    });
+      });
 
-    // When resolution has been saved,
-    return task_modified.then(function() {
-      if (success) {
+      // When resolution has been saved,
+      return task_modified.then(function() {
         if (task.dependents.length != 0) {
           // There are dependent tasks, when we should try to schedule those
           debug("Scheduling dependent tasks");
@@ -298,11 +275,11 @@ exports.completed = function(message) {
           debug("Checking if task graph has finished");
           return checkTaskGraphFinished(taskGraphId, task.taskId);
         }
-      } else {
-        debug("Requesting a task to be rerun if possible");
-        return rerunTask(task);
-      }
-    });
+      });
+    } else {
+      debug("Requesting a task to be rerun if possible");
+      return rerunTaskOrBlock(task, message);
+    }
   });
 };
 
