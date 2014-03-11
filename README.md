@@ -43,6 +43,7 @@ Entities: (task-graph)
   partitionKey:           <task-graph-id>
   rowKey:                 task-graph
   requires:               [<taskId>, <taskId>, ...]
+  requiresLeft:           [...]
   state:                  running | blocked | finished
   routing:                <taskGraph.routing>
 
@@ -54,7 +55,8 @@ Entities:
   rerunsLeft:             4
   deadline:               Datetime
   requires:               ['<taskId>, <taskId>, ...']
-  dependents:             ['<taskId>, ..., ] // if emoty check task-graph
+  requiresLeft:           [...]
+  dependents:             ['<taskId>, ..., ] // if empty check task-graph
   resolution:             {resultUrl?, logsUrl?, success, completed} | null
 
 Operations:

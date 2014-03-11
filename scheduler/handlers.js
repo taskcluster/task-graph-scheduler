@@ -37,16 +37,16 @@ var scheduleDependentTasks = function(task) {
       return dependentTask.modify(function() {
         // If the successfully completed task isn't required by the dependent
         // task then we don't need to modify or schedule it
-        if (!_.contains(this.requires, task.taskId)) {
+        if (!_.contains(this.requiresLeft, task.taskId)) {
           return;
         }
 
         // Now we know the successful task is blocking, we remove it
-        this.requires = _.without(this.requires, task.taskId);
+        this.requiresLeft = _.without(this.requiresLeft, task.taskId);
 
         // If no other tasks are blocked the dependent tasks then we should
         // schedule it.
-        if (this.requires.length == 0) {
+        if (this.requiresLeft.length == 0) {
           // Note, that on the queue this is an idempotent operation, so it is
           // not a problem if we do this more than once.
           return scheduleTask(dependentTaskId);
@@ -72,16 +72,16 @@ var checkTaskGraphFinished = function(taskGraphId, successfullTaskId) {
 
       // If the successfully completed task isn't required by the task-graph
       // then we don't need to modify or declare it finished it
-      if (!_.contains(this.requires, successfullTaskId)) {
+      if (!_.contains(this.requiresLeft, successfullTaskId)) {
         return;
       }
 
       // Now we know the successful task is blocking, we remove it
-      this.requires = _.without(this.requires, successfullTaskId);
+      this.requiresLeft = _.without(this.requiresLeft, successfullTaskId);
 
-      // If no other tasks are blockinghte task-graph from being finished
+      // If no other tasks are blocking the task-graph from being finished
       // the we're finishing the task-graph now.
-      taskGraphFinishedNow = (this.requires.length == 0);
+      taskGraphFinishedNow = (this.requiresLeft.length == 0);
 
       // If the task-graph is finished, we might as well declare this
       if (taskGraphFinishedNow) {

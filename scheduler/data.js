@@ -421,6 +421,9 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
     key:              'requires',
     type:             'json'
   }, {
+    key:              'requiresLeft',
+    type:             'json'
+  }, {
     key:              'dependents',
     type:             'json'
   }, {
@@ -466,6 +469,9 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
     type:             'string'
   }, {
     key:              'requires',
+    type:             'json'
+  }, {
+    key:              'requiresLeft',
     type:             'json'
   }, {
     key:              'state',

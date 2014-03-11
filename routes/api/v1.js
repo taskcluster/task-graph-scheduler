@@ -208,6 +208,7 @@ api.declare({
       taskGraphId:        taskGraphId,
       version:            '0.2.0',
       requires:           requires,
+      requiresLeft:       _.cloneDeep(requires),
       state:              'running',
       routing:            input.routing
     });
@@ -233,6 +234,7 @@ api.declare({
         rerunsLeft:       taskNode.reruns,
         deadline:         new Date(taskNode.task.deadline),
         requires:         taskNode.requires,
+        requiresLeft:     _.cloneDeep(taskNode.requires),
         dependents:       taskNode.dependents,
         resolution:       null
       });

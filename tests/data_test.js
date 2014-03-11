@@ -22,6 +22,7 @@ exports.TestTaskGraph = function(test){
       taskGraphId:        taskGraphId,
       version:            '0.2.0',
       requires:           ['task1', 'task2'],
+      requiresLeft:       ['task1', 'task2'],
       params:             {},
       nameMapping: {
         SomeTaskLabel:    'SomeTaskId'
@@ -66,16 +67,18 @@ exports.TestTaskGraph = function(test){
   var modify_taskgraphs = reloaded_taskgraph_tested.then(function() {
     debug("Modifying two different instances of the same taskGraphs entity");
     var modify_taskgraph1 = taskGraph1.modify(function() {
-      debug("Applying modifier for taskGraph1, this.requires: ", this.requires);
-      this.requires = _.without(this.requires, 'task1');
-      if (this.requires.length == 0) {
+      debug("Applying modifier for taskGraph1, this.requiresLeft: ",
+            this.requiresLeft);
+      this.requiresLeft = _.without(this.requiresLeft, 'task1');
+      if (this.requiresLeft.length == 0) {
         reached_empty_list = true;
       }
     });
     var modify_taskgraph2 = taskGraph2.modify(function() {
-      debug("Applying modifier for taskGraph2, this.requires: ", this.requires);
-      this.requires = _.without(this.requires, 'task2');
-      if (this.requires.length == 0) {
+      debug("Applying modifier for taskGraph2, this.requiresLeft: ",
+            this.requiresLeft);
+      this.requiresLeft = _.without(this.requiresLeft, 'task2');
+      if (this.requiresLeft.length == 0) {
         reached_empty_list = true;
       }
     });
