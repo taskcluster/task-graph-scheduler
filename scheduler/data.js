@@ -403,6 +403,9 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
     property:         'taskId',
     type:             'string'
   }, {
+    key:              'version',
+    type:             'string'
+  }, {
     key:              'label',
     type:             'string'
   }, {
@@ -458,6 +461,9 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
     key:              'RowKey',
     type:             'string',
     hidden:           true
+  }, {
+    key:              'version',
+    type:             'string'
   }, {
     key:              'requires',
     type:             'json'

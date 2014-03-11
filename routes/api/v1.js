@@ -206,6 +206,7 @@ api.declare({
           taskGraphId, requires.length);
     return TaskGraph.create({
       taskGraphId:        taskGraphId,
+      version:            '0.2.0',
       requires:           requires,
       state:              'running',
       routing:            input.routing
@@ -226,6 +227,7 @@ api.declare({
       return Task.create({
         taskGraphId:      taskGraphId,
         taskId:           taskNode.taskId,
+        version:          '0.2.0',
         label:            taskNode.taskLabel,
         rerunsAllowed:    taskNode.reruns,
         rerunsLeft:       taskNode.reruns,

@@ -20,6 +20,7 @@ exports.TestTaskGraph = function(test){
     debug("Creating TaskGraph entity");
     return data.TaskGraph.create({
       taskGraphId:        taskGraphId,
+      version:            '0.2.0',
       requires:           ['task1', 'task2'],
       params:             {},
       nameMapping: {
