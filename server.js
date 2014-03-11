@@ -120,7 +120,7 @@ exports.launch = function() {
     debug("Launching in development-mode");
   }
 
-  // Setup amqp exchanges and connection
+  // Setup
   return events.setup().then(function() {
     return validate.setup();
   }).then(function() {

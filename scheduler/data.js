@@ -7,13 +7,11 @@ var Promise         = require('promise');
 var debug           = require('debug')('scheduler:data');
 var slugid          = require('../utils/slugid');
 
-// See https://github.com/gluwer/azure-table-node
-
 var MAX_MODIFY_RETRIES      = 5;
 
 // Create default azureTable client for convenience
 azureTable.setDefaultClient(nconf.get('azureTableCredentials'));
-var client    = azureTable.getDefaultClient();
+var client = azureTable.getDefaultClient();
 
 /** Date types supported by serialize/deserialize */
 var dataTypes = ['string', 'number', 'json', 'date', 'slugid'];
@@ -497,7 +495,7 @@ TaskGraph.load = function(taskGraphId) {
 TaskGraph.prototype.status = function() {
   return {
     taskGraphId:    this.taskGraphId,
-    schedulerId:    nconf.get('scheduler:taskGraphSchdulerId'),
+    schedulerId:    nconf.get('scheduler:taskGraphSchedulerId'),
     state:          this.state,
     routing:        this.routing
   };

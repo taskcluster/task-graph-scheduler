@@ -160,7 +160,7 @@ api.declare({
 
     // Routing prefix for task.routing
     var routingPrefix = [
-      nconf.get('scheduler:taskGraphSchdulerId'),
+      nconf.get('scheduler:taskGraphSchedulerId'),
       taskGraphId,
       input.routing
     ].join('.');

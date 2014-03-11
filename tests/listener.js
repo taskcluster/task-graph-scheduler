@@ -66,7 +66,7 @@ Listener.prototype.setup = function() {
         debug('Bind queue to exchange');
         queue.bind(
           that.exchange,
-          '_._._._._._.' + nconf.get('scheduler:taskGraphSchdulerId') + '.#',
+          '_._._._._._.' + nconf.get('scheduler:taskGraphSchedulerId') + '.#',
           function() {
             accept();
           }

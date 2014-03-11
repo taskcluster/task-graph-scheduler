@@ -166,8 +166,8 @@ exports.setup = function() {
 
   // Bind queue to exchanges
   var setup_completed = subscribe_to_messages.then(function() {
-    var id = nconf.get('scheduler:taskGraphSchdulerId');
-    assert(id.length <= 22, "taskGraphSchdulerId is too long!");
+    var id = nconf.get('scheduler:taskGraphSchedulerId');
+    assert(id.length <= 22, "taskGraphSchedulerId is too long!");
     var routingPattern = '*.*.*.*.*.*.' + id + '.#';
     return new Promise(function(accept, reject) {
       debug('Binding to exchanges');
