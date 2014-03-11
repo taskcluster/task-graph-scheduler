@@ -232,6 +232,10 @@ exports.publish = function(exchange, message) {
 
     // Construct routing key from task-graph status structure in message
     var routingKey = [
+      // The following constant ensures that schedulerId, taskGraphId and
+      // task-graph routing key has the same routing-key index for both
+      // scheduler exchanges and queue exchanges.
+      '_._._._._._',
       message.status.schedulerId,
       message.status.taskGraphId,
       message.status.routing

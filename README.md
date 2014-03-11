@@ -108,11 +108,14 @@ Message Routing Key
 All messages have the same **routing key format**, which is a dot (`.`)
 separated list of identifiers, defined as follows:
 
-  1. `schedulerId`, identifier for the task-graph scheduler to which the
+  1. The constant '_._._._._._', the inclusion of this constant ensures that
+     the same routing pattern can be used for both task-graph scheduler
+     exchanges and task queue exchanges.
+  2. `schedulerId`, identifier for the task-graph scheduler to which the
       task-graph was submitted. For production this is always
       `task-graph-scheduler`.
-  2. `taskGraphId`, task-graph identifier as assigned at submission.
-  3. `taskGraph.routing`, the `routing` property from the submitted task-graph,
+  3. `taskGraphId`, task-graph identifier as assigned at submission.
+  4. `taskGraph.routing`, the `routing` property from the submitted task-graph,
       **note** that this property may contain additional dots.
 
 Task Message Routing Key Prefixes
@@ -124,13 +127,13 @@ prefixed, such that the `task.routing` will be:
 This means that messages sent by queue for any task scheduled by the task-graph
 scheduler will have the following routing key:
 
-  1. `task-id`
-  2. `run-id`
-  3. `worker-group`
-  4. `worker-id`
-  5. `provisioner-id`
-  6. `worker-type`
-  7. `schedulerId`
-  8. `taskGraphId`
-  9. `taskGraph.routing` (May contain additional dots)
-  7. `task.routing` (May contain additional dots)
+  1.  `task-id`
+  2.  `run-id`
+  3.  `worker-group`
+  4.  `worker-id`
+  5.  `provisioner-id`
+  6.  `worker-type`
+  7.  `schedulerId`
+  8.  `taskGraphId`
+  9.  `taskGraph.routing` (May contain additional dots)
+  10. `task.routing` (May contain additional dots)
