@@ -124,6 +124,11 @@ exports.launch = function() {
   return events.setup().then(function() {
     return validate.setup();
   }).then(function() {
+    // Set azure CORS properties if required
+    if (nconf.get('scheduler:ensureAzureCORS')) {
+      return require('./utils/azure-cors').setAzureCORS();
+    }
+  }).then(function() {
     // Publish schemas if necessary
     if (nconf.get('scheduler:publishSchemas')) {
       return require('./utils/render-schema').publish();

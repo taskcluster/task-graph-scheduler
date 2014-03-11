@@ -27,7 +27,10 @@ var DEFAULT_CONFIG_VALUES = {
     // is therefore limited to 22 characters. In production we'll use
     // `task-graph-scheduler`, do **NOT** use this for testing, as your messages
     // would be sent to the scheduler too.
-    taskGraphSchdulerId:            "jonasfj-test-tgs"
+    taskGraphSchdulerId:            "jonasfj-test-tgs",
+
+    // Always set CORS on azure after restarting
+    ensureAzureCORS:                false
   },
 
   // Queue configuration

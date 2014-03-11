@@ -137,6 +137,14 @@ Entity.subClass = function(constructor, tableName, mapping) {
   constructor.prototype.__tableName = tableName;
   constructor.prototype.__mapping   = mapping;
 
+  /** Generate SAS signature for reading the underlying Azure Table */
+  constructor.generateSAS = function() {
+    // Let it expire in an hour
+    var expires = new Date();
+    expires.setHours(expires.getHours() + 1);
+    return client.generateSAS(tableName, 'r', expires);
+  };
+
   // Define read-only properties for the underlying shadow object.
   mapping.forEach(function(entry) {
     // Allow for hidden entries

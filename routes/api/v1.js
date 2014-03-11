@@ -278,3 +278,18 @@ api.declare({
   });
 });
 
+/** Get SAS Signature for Azure Table Access */
+api.declare({
+  method:     'get',
+  route:      '/table-access',
+  input:      undefined,
+  output:     undefined,
+  title:      "Get Access to Azure Table",
+  desc: [
+    "TODO: Write documentation"
+  ].join('\n')
+}, function(req, res) {
+  res.json(200, {
+    sas:  TaskGraph.generateSAS()
+  });
+});
