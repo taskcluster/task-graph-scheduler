@@ -38,7 +38,7 @@
             "minimum":          0,
             "maximum":          999
           },
-          "task":               {"$ref": "http://schemas.taskcluster.net/v1/task.json#"}
+          "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
         }
       }
     }

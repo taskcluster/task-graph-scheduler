@@ -153,5 +153,18 @@ exports.launch = function() {
 
 // If server.js is executed start the server
 if (!module.parent) {
-  exports.launch();
+  exports.launch().then(function() {
+    // If launched in development mode as a subprocess of node, then we'll
+    // sending a message informing the parent process that we're now ready!
+    // This is useful for automated testing, in fact LocalScheduler relies on
+    // this message.
+    if (app.get('env') == 'development' && process.send) {
+      process.send({ready: true});
+    }
+    debug("Launch queue successfully");
+  }).catch(function(err) {
+    debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
+    // If we didn't launch the server we should crash
+    process.exit(1);
+  });
 }

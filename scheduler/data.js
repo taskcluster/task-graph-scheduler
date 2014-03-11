@@ -20,6 +20,10 @@ var dataTypes = ['string', 'number', 'json', 'date', 'slugid'];
 
 /** Normalize and validate a entity mapping entry */
 var normalizeEntityMappingEntry = function(entry) {
+  assert(entry.key != 'PartitionKey' || entry.type == 'string',
+         "PartitionKey must be a string, azure table always stores as string");
+  assert(entry.key != 'RowKey' || entry.type == 'string',
+         "RowKey must be a string, azure table always stores as string");
   assert(entry.key !== undefined, "Entry key must be defined");
   assert(entry.type !== undefined, "Entry type must be defined");
   assert(_.contains(dataTypes, entry.type), "Entry.type not supported!");
@@ -385,11 +389,11 @@ Entity.subClass(Task, nconf.get('scheduler:azureTaskGraphTable'), [
   {
     key:              'PartitionKey',
     property:         'taskGraphId',
-    type:             'slugid'
+    type:             'string'
   }, {
     key:              'RowKey',
     property:         'taskId',
-    type:             'slugid'
+    type:             'string'
   }, {
     key:              'label',
     type:             'string'
@@ -438,7 +442,7 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
   {
     key:              'PartitionKey',
     property:         'taskGraphId',
-    type:             'slugid'
+    type:             'string'
   }, {
     // This is always hardcoded to 'task-graph', so we can use the same table
     // for both TaskGraph and Task entities. This ensures that we can make

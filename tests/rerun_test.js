@@ -22,6 +22,7 @@ var taskGraphExample = {
         "provisionerId":    "aws-provisioner",
         "workerType":       "ami-cc5c30fc",
         "routing":          "",
+        "timeout":          600,
         "retries":          3,
         "priority":         5,
         "created":          "2014-03-01T22:19:32.124Z",
@@ -55,6 +56,7 @@ var taskGraphExample = {
         "provisionerId":    "aws-provisioner",
         "workerType":       "ami-cc5c30fc",
         "routing":          "",
+        "timeout":          600,
         "retries":          3,
         "priority":         5,
         "created":          "2014-03-01T22:19:32.124Z",
@@ -92,8 +94,6 @@ exports.SchedulerTest = function(test) {
   // the taskGraphId, which we'll set as soon as the task have been posted
   var taskGraphId;
   var localscheduler = new LocalScheduler();
-  localscheduler.launch();
-  debug("Started localscheduler");
 
   var listener = new Listener('scheduler/v1/task-graph-blocked');
   listener.on('message', function(message) {
@@ -109,32 +109,33 @@ exports.SchedulerTest = function(test) {
     }
   });
 
-  var subscribed = listener.setup();
+  var launched = localscheduler.launch();
+
+  var subscribed = launched.then(function() {
+    return listener.setup();
+  });
 
   // Post something to the scheduler
   subscribed.then(function() {
-    debug("Giving localscheduler 3s to start");
-    setTimeout(function() {
-      debug("Posting task-graph to scheduler");
-      request
-        .post(
-          'http://' + nconf.get('server:hostname') + ':' +
-          nconf.get('server:port') + '/v1/task-graph/create'
-        )
-        .send(taskGraphExample)
-        .end(function(res) {
-          debug("Posted task to scheduler");
-          if (!res.ok) {
-            debug("Error submitting: ", res.body);
-            test.ok(false, "Failed to submit task-graph");
-            return;
-          }
-          debug("Posting task-graph gave: ", res.body);
-          taskGraphId = res.body.status.taskGraphId;
-          test.ok(true, "Task-graph submitted");
-        });
-      debug("Task posted");
-    }, 3000);
+    debug("Posting task-graph to scheduler");
+    request
+      .post(
+        'http://' + nconf.get('server:hostname') + ':' +
+        nconf.get('server:port') + '/v1/task-graph/create'
+      )
+      .send(taskGraphExample)
+      .end(function(res) {
+        debug("Posted task to scheduler");
+        if (!res.ok) {
+          debug("Error submitting: ", res.body);
+          test.ok(false, "Failed to submit task-graph");
+          return;
+        }
+        debug("Posting task-graph gave: ", res.body);
+        taskGraphId = res.body.status.taskGraphId;
+        test.ok(true, "Task-graph submitted");
+      });
+    debug("Task posted");
   }).catch(function(err) {
     debug("Error in scheduler test: ", err, err.stack);
     test.ok(false);

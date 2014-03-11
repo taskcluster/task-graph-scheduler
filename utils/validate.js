@@ -47,7 +47,7 @@ var setup = function() {
 
   // Load all schemas that need to be loaded from remote source
   return Promise.all([
-    'http://schemas.taskcluster.net/v1/task.json'
+    'http://schemas.taskcluster.net/queue/v1/task.json'
   ].map(function(schemaUrl) {
     return new Promise(function(accept, reject) {
       request
