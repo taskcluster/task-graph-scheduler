@@ -70,7 +70,7 @@ render.publish = function() {
       // Publish schema to S3
       debug("Publishing: %s", relPath);
       return s3.putObject({
-        Bucket:           nconf.get('queue:schemaBucket'),
+        Bucket:           nconf.get('scheduler:schemaBucket'),
         Key:              relPath,
         Body:             JSON.stringify(schema, undefined, 4),
         ContentType:      'application/json'
