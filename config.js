@@ -1,4 +1,5 @@
 var nconf   = require('nconf');
+var aws     = require('aws-sdk');
 
 /** Default configuration values */
 var DEFAULT_CONFIG_VALUES = {
@@ -56,6 +57,16 @@ var DEFAULT_CONFIG_VALUES = {
 
     // Cookie secret used to sign cookies, must be secret at deployment
     cookieSecret:                   "Warn, if no secret is used on production"
+  },
+
+  // AWS SDK configuration for publication of schemas
+  'aws': {
+    // Default AWS region, this is where the S3 bucket lives
+    'region':                       'us-west-2',
+
+    // Lock API version to use the latest API from 2013, this is fuzzy locking,
+    // but it does the trick...
+    'apiVersion':                   '2014-01-01'
   }
 };
 
@@ -76,13 +87,18 @@ exports.load = function() {
     separator:  '__',
     whitelist:  [
       'scheduler__publishSchemas',
+      'scheduler__amqpQueueName',
+      'scheduler__taskGraphSchedulerId',
+      'scheduler__ensureAzureCORS',
       'azureTableCredentials__accountUrl',
       'azureTableCredentials__accountName',
       'azureTableCredentials__accountKey',
       'queue__baseUrl',
       'server__hostname',
       'server__port',
-      'server__cookieSecret'
+      'server__cookieSecret',
+      'aws__accessKeyId',
+      'aws__secretAccessKey'
     ]
   });
 
@@ -97,4 +113,7 @@ exports.load = function() {
 
   // Load default configuration
   nconf.defaults(DEFAULT_CONFIG_VALUES);
+
+  // Set configuration for aws-sdk
+  aws.config.update(nconf.get('aws'));
 }
