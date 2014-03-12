@@ -9,6 +9,7 @@ var debug       = require('debug')('routes:api:v1');
 var request     = require('superagent');
 var events      = require('../../scheduler/events');
 var assert      = require('assert');
+var querystring = require('querystring');
 
 /** API end-point for version v1/ */
 var api = module.exports = new utils.API({
@@ -286,10 +287,17 @@ api.declare({
   output:     undefined,
   title:      "Get Access to Azure Table",
   desc: [
+    "**Warning**, this API end-point is **not stable**. At this point in time",
+    "right is reserved to change the table at any time.. People shouldn't",
+    "build fancy tools on this. Jump onto #taskcluster if you want a stable",
+    "API for this... We should think up something reasonable.",
+    "",
     "TODO: Write documentation"
   ].join('\n')
 }, function(req, res) {
   res.json(200, {
-    sas:  TaskGraph.generateSAS()
+    accountName:        nconf.get('azureTableCredentials:accountName'),
+    sharedSignature:    querystring.parse(TaskGraph.generateSAS()),
+    taskGraphTable:     nconf.get('scheduler:azureTaskGraphTable')
   });
 });
