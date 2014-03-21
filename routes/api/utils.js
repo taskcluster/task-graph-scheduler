@@ -104,7 +104,7 @@ API.prototype.declare = function(options, handler) {
       var incidentId = uuid.v4();
       debug(
         "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
-        options.route, err, err, err.stack, incidentId
+        options.route, err, err, incidentId, err.stack
       );
       res.json(500, {
         message:        "Internal Server Error",
