@@ -3,6 +3,8 @@ var express     = require('express');
 var debug       = require('debug')('routes:api:utils');
 var validate    = require('../../utils/validate');
 var Promise     = require('promise');
+var uuid        = require('uuid');
+
 
 // This file contains a collection of neat middleware for building API
 // end-points, that can mounted on an express application
@@ -99,12 +101,17 @@ API.prototype.declare = function(options, handler) {
   // Set handler on options
   options.handler = function(req, res) {
     Promise.from(handler(req, res)).then(undefined, function(err) {
+      var incidentId = uuid.v4();
       debug(
-        "Error occurred handling: %s, err: %s, as JSON: %j",
-        options.route, err, err, err.stack
+        "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
+        options.route, err, err, err.stack, incidentId
       );
       res.json(500, {
-        message:        "Internal Server Error"
+        message:        "Internal Server Error",
+        error: {
+          info:         "Ask administrator to lookup incidentId in log-file",
+          incidentId:   incidentId
+        }
       });
     });
   };
