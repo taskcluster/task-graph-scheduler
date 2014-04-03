@@ -20,7 +20,7 @@ var taskGraphExample = {
       "task": {
         "version":          "0.2.0",
         "provisionerId":    "aws-provisioner",
-        "workerType":       "ami-cc5c30fc",
+        "workerType":       "test-worker",
         "routing":          "",
         "timeout":          600,
         "retries":          3,
@@ -28,7 +28,7 @@ var taskGraphExample = {
         "created":          "2014-03-01T22:19:32.124Z",
         "deadline":         "2060-03-01T22:19:32.124Z",
         "payload": {
-          "image":          "ubuntu",
+          "image":          "ubuntu:latest",
           "command": [
             "/bin/bash", "-c",
             "echo 'Hello World'"
@@ -54,7 +54,7 @@ var taskGraphExample = {
       "task": {
         "version":          "0.2.0",
         "provisionerId":    "aws-provisioner",
-        "workerType":       "ami-cc5c30fc",
+        "workerType":       "test-worker",
         "routing":          "",
         "timeout":          600,
         "retries":          3,
@@ -62,7 +62,7 @@ var taskGraphExample = {
         "created":          "2014-03-01T22:19:32.124Z",
         "deadline":         "2060-03-01T22:19:32.124Z",
         "payload": {
-          "image":          "ubuntu",
+          "image":          "ubuntu:latest",
           "command": [
             "/bin/bash", "-c",
             "echo 'Hello World (Again)'"
