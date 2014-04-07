@@ -218,32 +218,15 @@ exports.failed = function(message) {
 exports.completed = function(message) {
   // Extract the taskGraphId from the task-specific routing key
   var taskGraphId     = message.status.routing.split('.')[1];
-  var completedTaskId  = message.status.taskId;
+  var completedTaskId = message.status.taskId;
   debug("Got message that taskId: %s completed", completedTaskId);
-
-  // Fetch result.json and determine if the task completed successfully
-  var got_success = new Promise(function(accept, reject) {
-    request
-      .get(message.resultUrl)
-      .end(function(res) {
-        if (!res.ok) {
-          debug("Failed to fetch result.json for taskId: %s", completedTaskId);
-          return reject(res.body);
-        }
-        debug("Fetched result.json from %s got %j", completedTaskId, res.body);
-        accept(res.body.result.exitCode == 0);
-      });
-  });
 
   // Load the completed task
   var task_loaded = Task.load(taskGraphId, completedTaskId);
 
-  // When result.json and task entity is loaded we modify the task resolution
-  return Promise.all(
-    got_success,
-    task_loaded
-  ).spread(function(success, task) {
-    if (success) {
+  // When task entity is loaded we modify the task resolution
+  return task_loaded.then(function(task) {
+    if (message.success) {
       var task_modified = task.modify(function() {
         this.resolution = {
           completed:      true,
