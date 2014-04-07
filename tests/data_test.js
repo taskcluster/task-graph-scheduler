@@ -1,4 +1,4 @@
-var slugid    = require('../utils/slugid');
+var slugid    = require('slugid');
 var server    = require('../server');
 var data      = require('../scheduler/data');
 var debug     = require('debug')('test:data_test');

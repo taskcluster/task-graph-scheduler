@@ -1,6 +1,6 @@
 var nconf       = require('nconf');
 var utils       = require('./utils');
-var slugid      = require('../../utils/slugid');
+var slugid      = require('slugid');
 var jsonsubs    = require('../../utils/jsonsubs');
 var validate    = require('../../utils/validate');
 var Promise     = require('promise');

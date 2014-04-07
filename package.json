@@ -29,7 +29,8 @@
     "aws-sdk":                          "2.0.0-rc10",
     "azure-common":                     "~0.9.1-pre.2",
     "azure":                            "~0.8.1",
-    "js2xmlparser":                     "~0.1.3"
+    "js2xmlparser":                     "~0.1.3",
+    "slugid":                           "1.0.1"
   },
   "devDependencies": {
     "nodeunit":                         "0.8.6"
