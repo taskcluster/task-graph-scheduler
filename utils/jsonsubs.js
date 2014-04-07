@@ -13,6 +13,9 @@ module.exports = function(json, params) {
     if (typeof(obj) == 'string') {
       return substr(obj);
     } else if (typeof(obj) == 'object') {
+      if (obj instanceof Array) {
+        return undefined;
+      }
       var clone = {};
       for(var k in obj) {
         clone[substr(k)] = _.cloneDeep(obj[k], substitute);

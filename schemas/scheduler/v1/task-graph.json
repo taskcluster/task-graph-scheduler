@@ -10,6 +10,17 @@
       "description":    "Task-graph definition version",
       "enum":           ["0.2.0"]
     },
+    "params": {
+      "title":          "Parameters",
+      "type":           "object",
+      "description":    "Parameters that will be substituted into keys and strings of this object. This is useful for substituting repository, revision, owner, and other things like that. It is not recommended that this is used to modify task labels, nor is recursive substitution supported.",
+      "additionalProperties": {
+        "title":        "Parameter Value",
+        "description":  "Value to be substituted in for a parameter",
+        "type":         "string",
+        "maxLength":    4096
+      }
+    },
     "routing":          {"$const": "routing"},
     "tasks": {
       "title":                  "Tasks",
@@ -20,7 +31,7 @@
         "description":          "Representation of a tasks in the task-graph",
         "type":                 "object",
         "properties": {
-          "required": {
+          "requires": {
             "title":            "Required tasks",
             "description":      "List of required task labels",
             "type":             "array",
@@ -39,10 +50,11 @@
             "maximum":          999
           },
           "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
-        }
+        },
+        "required":             ["requires", "reruns", "task"]
       }
     }
   },
   "additionalProperties":       false,
-  "required":                   ["version", "routing", "tasks"]
+  "required":                   ["version", "params", "routing", "tasks"]
 }

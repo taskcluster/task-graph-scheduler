@@ -12,6 +12,7 @@ config.load();
 // Task graph that'll post in this test
 var taskGraphExample = {
   "version":                "0.2.0",
+  "params":                 {},
   "routing":                "",
   "tasks": {
     "print-once": {

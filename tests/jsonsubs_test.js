@@ -28,6 +28,21 @@ exports.substituteKeyTest = function(test) {
   test.done()
 };
 
+exports.substituteArrayTest = function(test) {
+  test.expect(2);
+
+  var template = ["Hello {{key}}", 42];
+  var params = {
+    key: "World"
+  };
+  var result = jsonsubs(template, params);
+
+  test.ok(result instanceof Array);
+  test.ok(result[0] == "Hello World");
+
+  test.done()
+};
+
 exports.ignoreUndefinedTest = function(test) {
   test.expect(1);
 

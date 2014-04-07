@@ -12,6 +12,9 @@ config.load();
 // Task graph that'll post in this test
 var taskGraphExample = {
   "version":                "0.2.0",
+  "params":                 {
+    "test-worker-type":     "test-worker"
+  },
   "routing":                "",
   "tasks": {
     "print-once": {
@@ -20,7 +23,7 @@ var taskGraphExample = {
       "task": {
         "version":          "0.2.0",
         "provisionerId":    "aws-provisioner",
-        "workerType":       "test-worker",
+        "workerType":       "{{test-worker-type}}",
         "routing":          "",
         "timeout":          600,
         "retries":          3,
@@ -54,7 +57,7 @@ var taskGraphExample = {
       "task": {
         "version":          "0.2.0",
         "provisionerId":    "aws-provisioner",
-        "workerType":       "test-worker",
+        "workerType":       "{{test-worker-type}}",
         "routing":          "",
         "timeout":          600,
         "retries":          3,
@@ -73,7 +76,8 @@ var taskGraphExample = {
         },
         "metadata": {
           "name":           "Print `'Hello World'` Again",
-          "description":    "This task will prìnt `'Hello World'` **again**!",
+          "description":    "This task will prìnt `'Hello World'` **again**! " +
+                            "and wait for {{taskId:print-once}}.",
           "owner":          "jojensen@mozilla.com",
           "source":         "https://github.com/taskcluster/task-graph-scheduler"
         },
@@ -127,7 +131,7 @@ exports.SchedulerTest = function(test) {
       .end(function(res) {
         debug("Posted task to scheduler");
         if (!res.ok) {
-          debug("Error submitting: ", res.body);
+          debug("Error submitting: ", JSON.stringify(res.body, null, 2));
           test.ok(false, "Failed to submit task-graph");
           return;
         }

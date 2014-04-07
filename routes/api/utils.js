@@ -135,7 +135,7 @@ API.prototype.mount = function(app, mountpoint) {
       return {
         method:         entry.method,
         route:          mountpoint + entry.route,
-        requestSchema:  entry.input,
+        requestSchema:  entry.input || entry.requestSchema,
         responseSchema: entry.output,
         title:          entry.title,
         description:    entry.desc
