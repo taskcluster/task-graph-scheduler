@@ -211,7 +211,11 @@ api.declare({
         requires:           requires,
         requiresLeft:       _.cloneDeep(requires),
         state:              'running',
-        routing:            input.routing
+        routing:            input.routing,
+        details: {
+          metadata:         input.metadata,
+          tags:             input.tags
+        }
       });
     });
 

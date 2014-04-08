@@ -477,6 +477,9 @@ Entity.subClass(TaskGraph, nconf.get('scheduler:azureTaskGraphTable'), [
   }, {
     key:              'routing',
     type:             'string'
+  }, {
+    key:              'details',
+    type:             'json'
   }
 ].map(normalizeEntityMappingEntry));
 

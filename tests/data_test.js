@@ -28,7 +28,17 @@ exports.TestTaskGraph = function(test){
         SomeTaskLabel:    'SomeTaskId'
       },
       state:              'running',
-      routing:            ""
+      routing:            "",
+      details: {
+        metadata: {
+          name:         "Validation Test TaskGraph",
+          owner:        "root@localhost.local",
+          source:       "http://github.com/taskcluster/task-graph-scheduler"
+        },
+        tags: {
+          "MyTestTag":  "Hello World"
+        }
+      }
     });
   });
 
