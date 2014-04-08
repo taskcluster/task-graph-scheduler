@@ -24,7 +24,8 @@
           ],
           "features": {
             "azureLivelog": true
-          }
+          },
+          "maxRunTime":     600
         },
         "metadata": {
           "name":           "Print `'Hello World'` Once",
@@ -58,7 +59,8 @@
           ],
           "features": {
             "azureLivelog": true
-          }
+          },
+          "maxRunTime":     600
         },
         "metadata": {
           "name":           "Print `'Hello World'` Again",

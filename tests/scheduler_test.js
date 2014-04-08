@@ -38,7 +38,8 @@ var taskGraphExample = {
           ],
           "features": {
             "azureLivelog": true
-          }
+          },
+          "maxRunTime":     600
         },
         "metadata": {
           "name":           "Print `'Hello World'` Once",
@@ -72,7 +73,8 @@ var taskGraphExample = {
           ],
           "features": {
             "azureLivelog": true
-          }
+          },
+          "maxRunTime":     600
         },
         "metadata": {
           "name":           "Print `'Hello World'` Again",
