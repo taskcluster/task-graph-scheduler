@@ -137,6 +137,16 @@ api.declare({
         // Add to dependents
         requiredTaskNode.dependents.push(taskLabel);
       });
+
+      // If you've provided a taskGraphId, then it's invalid. You cannot define
+      // these when posting a task-graph
+      if (taskNode.task.metadata.taskGraphId) {
+        errors.push({
+          message:      "You can't specify task.metadata.taskGraphId, by the " +
+                        "nature of this API you can't know the identifier.",
+          taskNode:     taskNode
+        });
+      }
     }
 
     // If we encountered anything suspicious we abort and ask the user to fix it
@@ -177,6 +187,7 @@ api.declare({
 
       // Prefix routing key with <schedulerId>.<taskGraphId>.<taskGraph.routing>
       taskDefintion.routing = routingPrefix + '.' + taskDefintion.routing;
+      taskDefintion.metadata.taskGraphId = taskGraphId;
 
       // Upload all task definitions to S3 using PUT URLs
       return new Promise(function(accept, reject) {
