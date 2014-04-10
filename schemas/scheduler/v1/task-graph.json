@@ -87,7 +87,7 @@
         }
       },
       "additionalProperties":   false,
-      "required": ["name", "owner", "source"]
+      "required": ["name", "description", "owner", "source"]
     },
     "tags": {
       "title":                  "Tags",

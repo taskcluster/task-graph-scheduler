@@ -90,9 +90,10 @@ var taskGraphExample = {
     }
   },
   "metadata": {
-    "name":       "Validation Test TaskGraph",
-    "owner":      "root@localhost.local",
-    "source":     "http://github.com/taskcluster/task-graph-scheduler"
+    "name":         "Validation Test TaskGraph",
+    "description":  "Task-graph description in markdown",
+    "owner":        "root@localhost.local",
+    "source":       "http://github.com/taskcluster/task-graph-scheduler"
   },
   "tags": {
     "MyTestTag": "Hello World"
