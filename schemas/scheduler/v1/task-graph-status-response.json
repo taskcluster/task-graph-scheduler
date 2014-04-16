@@ -1,0 +1,12 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Status Response",
+  "description":  "Response for a request for task-graph status",
+  "type":         "object",
+  "properties": {
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"}
+  },
+  "additionalProperties":       false,
+  "required":                   ["status"]
+}

@@ -79,7 +79,7 @@ var deserialize = function(value, entry) {
     assert(
       typeof(value) == type,
       "Value '" + value + "' must be either a string or number for " +
-      "key " + entry.key
+      "key '" + entry.key + "' instead we got " + typeof(value)
     );
     return value;
   }
@@ -438,6 +438,39 @@ Task.create = function(properties) {
 /** Load task */
 Task.load = function(taskGraphId, taskId) {
   return Entity.load(taskGraphId, taskId, Task);
+};
+
+/** Load all tasks for a given task-graph */
+Task.loadPartition = function(taskGraphId) {
+  return new Promise(function(accept, reject) {
+    var tasks = [];
+    var fetchNext = function(continuationTokens) {
+      client.queryEntities(Task.prototype.__tableName, {
+        query:      azureTable.Query.create()
+                      .where('PartitionKey', '==', taskGraphId)
+                      .and('RowKey', '!=', 'task-graph'),
+        forceEtags: true,
+        continuation: continuationTokens
+      }, function(err, data, continuationTokens) {
+        // Reject if we hit an error
+        if (err) {
+          return reject(err);
+        }
+        // Create wrapper for each task fetched
+        tasks.push.apply(tasks, data.map(function(entity) {
+          return new Task(entity);
+        }));
+
+        // If there are no continuation tokens then we accept data fetched
+        if (!continuationTokens) {
+          return accept(tasks);
+        }
+        // Fetch next set based on continuation tokens
+        fetchNext(continuationTokens);
+      });
+    }
+    fetchNext(undefined);
+  });
 };
 
 // Export Task

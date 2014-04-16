@@ -73,6 +73,9 @@ api.declare({
       taskIdParams['taskId:' + taskLables[i]] = availableTaskIds[i];
     }
 
+    // Store patched parameters
+    var unpatch_parameters = _.defaults(input.params, taskIdParams);
+
     // Parameterize input JSON
     input = jsonsubs(input, _.defaults(input.params, taskIdParams));
     // Validate input
@@ -225,7 +228,8 @@ api.declare({
         routing:            input.routing,
         details: {
           metadata:         input.metadata,
-          tags:             input.tags
+          tags:             input.tags,
+          params:           unpatch_parameters
         }
       });
     });
@@ -318,3 +322,76 @@ api.declare({
     taskGraphTable:     nconf.get('scheduler:azureTaskGraphTable')
   });
 });
+
+/** Get task-graph status */
+api.declare({
+  method:     'get',
+  route:      '/task-graph/:taskGraphId/status',
+  input:      undefined,
+  output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json',
+  title:      "Task Graph Status",
+  desc: [
+    "Get task-graph status, this will return the _task-graph status",
+    "structure_. which can be used to check if a task-graph is `running`,",
+    "`blocked` or `finished`.",
+    "",
+    "**Note**, that `finished` implies successfully completion."
+  ].join('\n')
+}, function(req, res) {
+  // Find task-graph id
+  var taskGraphId = req.params.taskGraphId;
+
+  // Load task-graph and build a status
+  return TaskGraph.load(taskGraphId).then(function(taskGraph) {
+    res.reply({
+      status:               taskGraph.status()
+    });
+  });
+});
+
+/** Get task-graph information */
+api.declare({
+  method:     'get',
+  route:      '/task-graph/:taskGraphId/info',
+  input:      undefined,
+  output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json',
+  title:      "Task Graph Information",
+  desc: [
+    "TODO: Write documentation..."
+  ].join('\n')
+}, function(req, res) {
+  // Find task-graph id
+  var taskGraphId = req.params.taskGraphId;
+
+  // Load task-graph and all tasks
+  return Promise.all(
+    TaskGraph.load(taskGraphId),
+    Task.loadPartition(taskGraphId)
+  ).then(function(values) {
+    var taskGraph = values.shift();
+    var tasks     = values.shift();
+
+    var taskData = {};
+    tasks.forEach(function(task) {
+      taskData[task.label] = {
+        taskId:       task.taskId,
+        taskUrl:      'http://tasks.taskcluster.net/' + task.taskId + '/task.json',
+        requires:     task.requires,
+        requiresLeft: task.requiresLeft,
+        reruns:       task.rerunsAllowed,
+        rerunsLeft:   task.rerunsLeft,
+        resolution:   task.resolution || {},
+        dependents:   task.dependents
+      };
+    });
+
+    res.reply({
+      status:   taskGraph.status(),
+      tasks:    taskData,
+      params:   taskGraph.details.params,
+      metadata: taskGraph.details.metadata,
+      tags:     taskGraph.details.tags
+    });
+  });
+});
+

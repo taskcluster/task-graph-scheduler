@@ -114,3 +114,74 @@ exports.TestTaskGraph = function(test){
   });
 };
 
+
+exports.TestTasks = function(test){
+  test.expect(7);
+
+  // Generate taskGraphId and taskId
+  var taskGraphId = slugid.v4();
+  var taskId      = slugid.v4();
+
+  // Ensure that the task table is created
+  var table_created = data.ensureTable(data.Task);
+
+  // Create a test task
+  var task_created = table_created.then(function() {
+    return data.Task.create({
+      taskGraphId:      taskGraphId,
+      taskId:           taskId,
+      version:          '0.2.0',
+      label:            'mytask',
+      rerunsAllowed:    2,
+      rerunsLeft:       2,
+      deadline:         new Date(),
+      requires:         [],
+      requiresLeft:     [],
+      dependents:       [],
+      resolution:       null
+    });
+  });
+
+  // Check task creation
+  var task1 = null;
+  var task_creation_checked = task_created.then(function(task) {
+    task1 = task;
+    test.ok(task != null, "Created a task");
+    test.ok(task.taskId == taskId, "Check taskId");
+  });
+
+  // Reload task
+  var task_reloaded = task_creation_checked.then(function() {
+    return data.Task.load(taskGraphId, taskId);
+  });
+
+  // Check reloading was okay
+  var task2 = null;
+  var task_reloaded_check = task_reloaded.then(function(task) {
+    task2 = task;
+    test.ok(task2 != null, "Created a task");
+    test.ok(task2.taskId == taskId, "Check taskId");
+  });
+
+  // Load task parition
+  var loaded_partition = task_reloaded_check.then(function() {
+    return data.Task.loadPartition(taskGraphId);
+  });
+
+  // Check the partition was loaded correctly
+  var checked_partition = loaded_partition.then(function(tasks) {
+    test.ok(tasks.length == 1, "Got one task");
+    test.ok(tasks[0].taskGraphId == taskGraphId, "Got right taskId");
+    test.ok(tasks[0].taskId == taskId, "Got right taskId");
+  });
+
+  // Check that we didn't get any errors
+  checked_partition.catch(function(err) {
+    debug("Failed with error: ", err);
+    test.ok(false);
+  }).then(function() {
+    test.done();
+  });
+};
+
+

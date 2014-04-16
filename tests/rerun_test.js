@@ -1,6 +1,6 @@
 var config          = require('../config');
 var LocalScheduler  = require('./localscheduler');
-var debug           = require('debug')('tests:scheduler_test');
+var debug           = require('debug')('tests:rerun_test');
 var request         = require('superagent');
 var Promise         = require('promise');
 var nconf           = require('nconf');
