@@ -1,5 +1,5 @@
 {
-  "name":     "taskcluster-queue",
+  "name":     "taskcluster-task-graph-scheduler",
   "version":  "0.1.0",
   "private":  true,
   "main":     "server.js",

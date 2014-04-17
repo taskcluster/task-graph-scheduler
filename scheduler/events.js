@@ -1,7 +1,7 @@
 var Promise   = require('promise');
 var nconf     = require('nconf');
 var amqp      = require('amqp');
-var request   = require('superagent');
+var request   = require('superagent-promise');
 var validate  = require('../utils/validate');
 var assert    = require('assert');
 var debug     = require('debug')('scheduler:events');
@@ -30,17 +30,17 @@ exports.setup = function() {
   var conn = null;
 
   // Fetch connection string from queue
-  var fetched_connection_string = new Promise(function(accept, reject) {
+  var fetched_connection_string =
     request
       .get(nconf.get('queue:baseUrl') + '/v1/settings/amqp-connection-string')
-      .end(function(res) {
+      .end()
+      .then(function(res) {
         if (!res.ok) {
-          return reject(res.body);
+          throw new Error(res.body);
         }
         assert(res.body.url, "amqp-connection-string reply missing url!");
-        accept(res.body.url);
+        return res.body.url;
       });
-  });
 
   // Get a promise that we'll be connected
   var connected = fetched_connection_string.then(function(connectionString) {

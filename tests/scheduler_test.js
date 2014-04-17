@@ -103,7 +103,7 @@ var taskGraphExample = {
 
 /** Test that scheduler works */
 exports.SchedulerTest = function(test) {
-  test.expect(7);
+  test.expect(8);
 
   // Start with some super stupid event subscription setup where we listen for
   // the taskGraphId, which we'll set as soon as the task have been posted
@@ -152,12 +152,12 @@ exports.SchedulerTest = function(test) {
     test.ok(true, "Task-graph submitted");
   });
 
-  var checked_info = posted.then(function() {
+  var checked_inspect = posted.then(function() {
     return request
               .get(
                 'http://' + nconf.get('server:hostname') + ':' +
                 nconf.get('server:port') + '/v1/task-graph/' + taskGraphId +
-                '/info'
+                '/inspect'
               )
               .end();
   }).then(function(res) {
@@ -166,9 +166,11 @@ exports.SchedulerTest = function(test) {
     test.ok(res.body.status.taskGraphId == taskGraphId, "got right taskGraphId");
     test.ok(res.body.tags.MyTestTag == "Hello World", "Got tag");
     test.ok(res.body.status.state == 'running', "got right state");
+    test.ok(res.body.tasks['print-twice'].requires.length == 1,
+            "got requires right");
   });
 
-  checked_info.catch(function(err) {
+  checked_inspect.catch(function(err) {
     debug("Error in scheduler test: ", err, err.stack);
     test.ok(false);
   });

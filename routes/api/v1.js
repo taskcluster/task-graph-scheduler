@@ -242,6 +242,7 @@ api.declare({
 
     // When all tasks have been posted to S3 next step is to create the task
     // entities
+    var tasks = null;
     var task_entities_created = got_task_graph_instance.then(function() {
       debug("Creating %s Task entities", taskNodes.length);
       return Promise.all(taskNodes.map(function(taskNode) {
@@ -259,11 +260,23 @@ api.declare({
           resolution:       null
         });
       }));
+    }).then(function(tasks_) {
+      tasks = tasks_;
     });
 
-    // When all task entities are created, we iterate through them and schedule
-    // those are have an empty requirements set
-    var tasks_scheduled = task_entities_created.then(function(tasks) {
+    // Post event on AMQP that task-graph is now running
+    // No task will be running at this point, be we shall schedule them in a
+    // few seconds...
+    var event_posted = task_entities_created.then(function() {
+      return events.publish('task-graph-running', {
+        version:              '0.2.0',
+        status:               taskGraph.status()
+      });
+    });
+
+    // When the task-graph have been announced, we iterate through all tasks
+    // and schedule those are have an empty requirements set
+    var tasks_scheduled = event_posted.then(function() {
       return Promise.all(tasks.filter(function(task) {
         return task.requires.length == 0;
       }).map(function(task) {
@@ -282,16 +295,8 @@ api.declare({
       }));
     });
 
-    // Post event on AMQP
-    var event_posted = tasks_scheduled.then(function() {
-      return events.publish('task-graph-running', {
-        version:              '0.2.0',
-        status:               taskGraph.status()
-      });
-    });
-
     // Reply with task graph scheduler status
-    return event_posted.then(function() {
+    return tasks_scheduled.then(function() {
       res.reply({
         status:               taskGraph.status()
       });
@@ -349,13 +354,38 @@ api.declare({
   });
 });
 
-/** Get task-graph information */
+/** Get task-graph metadata and tags */
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/info',
   input:      undefined,
   output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json',
   title:      "Task Graph Information",
+  desc: [
+    "TODO: Write documentation..."
+  ].join('\n')
+}, function(req, res) {
+  // Find task-graph id
+  var taskGraphId = req.params.taskGraphId;
+
+  // Load task-graph and build a status
+  return TaskGraph.load(taskGraphId).then(function(taskGraph) {
+    res.reply({
+      status:               taskGraph.status(),
+      metadata:             taskGraph.details.metadata,
+      tags:                 taskGraph.details.tags
+    });
+  });
+});
+
+
+/** Get inspect task-graph */
+api.declare({
+  method:     'get',
+  route:      '/task-graph/:taskGraphId/inspect',
+  input:      undefined,
+  output:     'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json',
+  title:      "Inspect Task Graph",
   desc: [
     "TODO: Write documentation..."
   ].join('\n')

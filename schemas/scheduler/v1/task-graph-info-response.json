@@ -2,101 +2,10 @@
   "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "Task-Graph Info Response",
-  "description":  "Information about a **task-graph** as known by the scheduler, with all the state of all individual tasks.",
-  "type":               "object",
+  "description":  "Response for a request for task-graph information",
+  "type":         "object",
   "properties": {
-    "status":           {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"},
-    "tasks": {
-      "title":                  "Tasks",
-      "description":            "Mapping from task-labels to task information and state.",
-      "type":                   "object",
-      "additionalProperties": {
-        "title":                "Task Information",
-        "description":          "Information about a tasks in the task-graph",
-        "type":                 "object",
-        "properties": {
-          "taskId":             {
-            "type":           "string",
-            "title":          "Task Identifier",
-            "description":    "Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
-            "pattern":        {"$const": "slugid-pattern"}
-          },
-          "taskUrl": {
-            "title":        "Task definition URL",
-            "description":  "URL from which task definition can be fetched",
-            "type":         "string",
-            "format":       "uri"
-          },
-          "requires": {
-            "title":            "Required tasks",
-            "description":      "List of required `taskId`s",
-            "type":             "array",
-            "items": {
-              "title":          "Required `taskId`",
-              "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
-              "type":           "string",
-              "pattern":        {"$const": "slugid-pattern"}
-            }
-          },
-          "requiresLeft": {
-            "title":            "Required tasks left",
-            "description":      "List of `taskId`s that have yet to complete successfully, before this task can be scheduled.",
-            "type":             "array",
-            "items": {
-              "title":          "Required `taskId`",
-              "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
-              "type":           "string",
-              "pattern":        {"$const": "slugid-pattern"}
-            }
-          },
-          "reruns": {
-            "title":            "Re-runs",
-            "description":      "Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.",
-            "type":             "integer",
-            "minimum":          0,
-            "maximum":          999
-          },
-          "rerunsLeft": {
-            "title":            "Re-runs Left",
-            "description":      "Number of reruns that haven't been used yet.",
-            "type":             "integer",
-            "minimum":          0,
-            "maximum":          999
-          },
-          "resolution": {
-            "type":             "object",
-            "title":            "Task resolution",
-            "description":      "**Warning unstable**, this object holds the state of this task as known to the scheduler. At the moment this isn't formalized yet. Feel free to guess what this means, but rest assured that the API will break without notice. No attempt will be made to maintain backwards compatibility of this object."
-          },
-          "dependents": {
-            "title":            "Dependent tasks",
-            "description":      "List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.",
-            "type":             "array",
-            "items": {
-              "title":          "Dependent `taskId`",
-              "description":    "`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.",
-              "type":           "string",
-              "pattern":        {"$const": "slugid-pattern"}
-            }
-          }
-        },
-        "required": [
-          "taskId", "taskUrl", "requires", "requiresLeft", "reruns",
-          "rerunsLeft", "resolution", "dependents"
-        ]
-      }
-    },
-    "params": {
-      "title":          "Parameters",
-      "type":           "object",
-      "description":    "Parameters that was substituted into keys and strings of task-graph when it was created.",
-      "additionalProperties": {
-        "title":        "Parameter Value",
-        "description":  "Value that was substituted in for a parameter",
-        "type":         "string",
-        "maxLength":    4096
-      }
-    },
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"},
     "metadata": {
       "title":                  "Meta-data",
       "description":            "Required task metadata",
@@ -139,8 +48,6 @@
       "additionalProperties":   {"type": "string", "maxLength": 4096}
     }
   },
-  "additionalProperties":   false,
-  "required": [
-    "status", "tasks", "params", "metadata", "tags"
-  ]
+  "additionalProperties":       false,
+  "required":                   ["status", "metadata", "tags"]
 }
