@@ -121,6 +121,20 @@ api.declare({
         });
       }
 
+      // Check that combined routing key is less than 128
+      // <schedulerId>.<taskGraphId>.<taskGraph.routing>
+      var patchedRoutingKeyLength = 22 + 1 + 22 + 1 +
+                                    input.routing.length + 1 +
+                                    taskNode.task.routing.length;
+      if (patchedRoutingKeyLength > 128) {
+        errors.push({
+          message: "Task labelled: " + taskLabel + " will get routing key " +
+                   "longer than the 128 bytes allowed",
+          taskNode:         taskNode,
+          routing:          taskNode.routing
+        });
+      }
+
       // Add taskLabel to required task nodes
       taskNode.requires.forEach(function(requiredLabel) {
         var requiredTaskNode = input.tasks[requiredLabel];
@@ -189,6 +203,8 @@ api.declare({
       var taskDefintion = _.cloneDeep(taskNode.task);
 
       // Prefix routing key with <schedulerId>.<taskGraphId>.<taskGraph.routing>
+      // Note, we have already check that this length fits in the 128 bytes
+      // available according to task schema
       taskDefintion.routing = routingPrefix + '.' + taskDefintion.routing;
       taskDefintion.metadata.taskGraphId = taskGraphId;
 

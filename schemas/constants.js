@@ -39,6 +39,6 @@ module.exports = {
     "title":        "Routing Key",
     "description":  "Task-graph specific routing key, may contain dots (`.`) for arbitrary sub-routes",
     "type":         "string",
-    "maxLength":    10
+    "maxLength":    64
   },
 };
