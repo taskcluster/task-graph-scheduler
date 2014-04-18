@@ -22,6 +22,7 @@ var api = module.exports = new utils.API({
 api.declare({
   method:         'post',
   route:          '/task-graph/create',
+  name:           'createTaskGraph',
   requestSchema:  'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
   output:         'http://schemas.taskcluster.net/scheduler/v1/create-task-graph-response.json#',
   title:          "Create new task-graph",
@@ -325,6 +326,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/table-access',
+  name:       'requestTableAccess',
   input:      undefined,
   output:     undefined,
   title:      "Get Access to Azure Table",
@@ -348,6 +350,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/status',
+  name:       'getTaskGraphStatus',
   input:      undefined,
   output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json',
   title:      "Task Graph Status",
@@ -374,6 +377,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/info',
+  name:       'getTaskGraphInfo',
   input:      undefined,
   output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json',
   title:      "Task Graph Information",
@@ -399,6 +403,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/inspect',
+  name:       'inspectTaskGraph',
   input:      undefined,
   output:     'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json',
   title:      "Inspect Task Graph",
