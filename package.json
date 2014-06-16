@@ -18,7 +18,8 @@
     "superagent-promise":               "0.1.0",
     "slugid":                           "1.0.1",
     "taskcluster-client":               "0.6.0",
-    "taskcluster-base":                 "0.1.0"
+    "taskcluster-base":                 "0.1.0",
+    "azure-table-node":                 "1.4.1"
   },
   "devDependencies": {
     "mocha":                            "1.18.2"

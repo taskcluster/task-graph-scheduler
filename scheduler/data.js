@@ -1,5 +1,7 @@
-var base    = require('taskcluster-base');
-var assert  = require('assert');
+var base        = require('taskcluster-base');
+var assert      = require('assert');
+var Promise     = require('promise');
+var azureTable  = require('azure-table-node');
 
 /** Configure a taskgraph Entity subclass */
 var TaskGraph = base.Entity.configure({

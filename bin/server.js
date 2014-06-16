@@ -23,9 +23,9 @@ var launch = function(profile) {
       'amqp_url',
       'aws_accessKeyId',
       'aws_secretAccessKey',
-      'azure_accountUrl',
-      'azure_accountName',
-      'azure_accountKey'
+      'azureTable_accountUrl',
+      'azureTable_accountName',
+      'azureTable_accountKey'
     ],
     filename:     'task-graph-scheduler'
   });
@@ -76,7 +76,11 @@ var launch = function(profile) {
   });
 
   // When: publisher, schema and validator is created, proceed
-  return publisherCreated.then(function() {
+  return Promise.all(
+    publisherCreated,
+    Task.createTable(),
+    TaskGraph.createTable()
+  ).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {
