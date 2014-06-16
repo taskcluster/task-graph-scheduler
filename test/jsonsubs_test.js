@@ -1,56 +1,43 @@
-var jsonsubs  = require('../utils/jsonsubs');
+suite('jsonsubs', function() {
+  var jsonsubs  = require('../utils/jsonsubs');
+  var assert    = require('assert');
 
-exports.substituteStringTest = function(test) {
-  test.expect(1);
+  test('substitute string', function() {
+    var template = "Hello {{key}}";
+    var params = {
+      key: "World"
+    };
+    var result = jsonsubs(template, params);
 
-  var template = "Hello {{key}}";
-  var params = {
-    key: "World"
-  };
-  var result = jsonsubs(template, params);
+    assert(result == "Hello World");
+  });
 
-  test.ok(result == "Hello World");
+  test('substitute key', function() {
+    var template = {"Hello {{key}}": 42};
+    var params = {
+      key: "World"
+    };
+    var result = jsonsubs(template, params);
 
-  test.done()
-};
+    assert(result["Hello World"] === 42);
+  });
 
-exports.substituteKeyTest = function(test) {
-  test.expect(1);
+  test('substitute array', function() {
+    var template = ["Hello {{key}}", 42];
+    var params = {
+      key: "World"
+    };
+    var result = jsonsubs(template, params);
 
-  var template = {"Hello {{key}}": 42};
-  var params = {
-    key: "World"
-  };
-  var result = jsonsubs(template, params);
+    assert(result instanceof Array);
+    assert(result[0] == "Hello World");
+  });
 
-  test.ok(result["Hello World"] === 42);
+  test('ignore undefined', function() {
+    var template = "Hello {{key}}";
+    var params = {};
+    var result = jsonsubs(template, params);
 
-  test.done()
-};
-
-exports.substituteArrayTest = function(test) {
-  test.expect(2);
-
-  var template = ["Hello {{key}}", 42];
-  var params = {
-    key: "World"
-  };
-  var result = jsonsubs(template, params);
-
-  test.ok(result instanceof Array);
-  test.ok(result[0] == "Hello World");
-
-  test.done()
-};
-
-exports.ignoreUndefinedTest = function(test) {
-  test.expect(1);
-
-  var template = "Hello {{key}}";
-  var params = {};
-  var result = jsonsubs(template, params);
-
-  test.ok(result === "Hello {{key}}");
-
-  test.done()
-};
+    assert(result === "Hello {{key}}");
+  });
+});
