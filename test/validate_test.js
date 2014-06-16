@@ -6,7 +6,10 @@ suite('validate', function() {
   base.testing.schemas({
     validator: {
       folder:       path.join(__dirname, '..', 'schemas'),
-      constants:    require('../schemas/constants')
+      constants:    require('../schemas/constants'),
+      preload: [
+        'http://schemas.taskcluster.net/queue/v1/task.json'
+      ]
     },
     basePath:       path.join(__dirname, 'validate_test'),
     schemaPrefix:   'http://schemas.taskcluster.net/',
