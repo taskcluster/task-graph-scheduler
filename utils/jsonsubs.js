@@ -1,5 +1,6 @@
 var _ = require('lodash');
 
+/** Substitute parameters into all strings in JSON document */
 module.exports = function(json, params) {
 
   var substr = function(str) {
