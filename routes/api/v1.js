@@ -5,6 +5,7 @@ var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
 var request     = require('superagent-promise');
 var assert      = require('assert');
+var base        = require('taskcluster-base');
 
 // TODO: Move request to super-agent promise
 
@@ -25,7 +26,7 @@ var querystring = require('querystring');
  * }
  */
 var api = new base.API({
-  title:        "Task-Graph Scheduler API Documentation"
+  title:        "Task-Graph Scheduler API Documentation",
   description: [
     "The task-graph scheduler, typically available at",
     "`scheduler.taskcluster.net`, is responsible for accepting task-graphs and",
@@ -37,7 +38,7 @@ var api = new base.API({
     " * Post-commit hooks, that wants to submit task-graphs for testing,",
     " * End-users, who wants to execute a set of dependent tasks, and",
     " * Tools, that wants to inspect the state of a task-graph."
-  ].join('');
+  ].join('\n')
 });
 
 // Export api
@@ -304,17 +305,16 @@ api.declare({
 
       // Upload all task definitions to S3 using PUT URLs
       return request
-        .put(taskIdToPutUrlMapping[taskNode.taskId].taskPutUrl)
-        .send(taskDefintion)
-        .end()
-        .then(function(res) {
-          if (!res.ok) {
-            debug("Failed to upload taskId: %s to PUT URL, Error: %s",
-                  taskNode.taskId, res.text);
-            throw new Error("Failed to upload task to put URLs");
-          }
-          return res.body;
-        });
+      .put(taskIdToPutUrlMapping[taskNode.taskId].taskPutUrl)
+      .send(taskDefintion)
+      .end()
+      .then(function(res) {
+        if (!res.ok) {
+          debug("Failed to upload taskId: %s to PUT URL, Error: %s",
+                taskNode.taskId, res.text);
+          throw new Error("Failed to upload task to put URLs");
+        }
+        return res.body;
       });
     }));
 
@@ -441,7 +441,7 @@ api.declare({
   description: [
     "Get task-graph information, this includes the _task-graph status",
     "structure_, along with `metadata` and `tags`, but not information",
-    "about all tasks."
+    "about all tasks.",
     "",
     "If you want more detailed information use the `inspectTaskGraph`",
     "end-point instead."

@@ -1,5 +1,4 @@
 var assert      = require('assert');
-var data        = require('./data');
 var taskcluster = require('taskcluster-client');
 var Promise     = require('promise');
 var debug       = require('debug')('scheduler:handlers');
@@ -22,10 +21,8 @@ var base        = require('taskcluster-base');
  */
 var Handlers = function(options) {
   // Validate options
-  assert(options.Task instanceof data.Task,
-         "An instance of data.Task is required");
-  assert(options.TaskGraph instanceof data.TaskGraph,
-         "An instance of data.TaskGraph is required");
+  assert(options.Task,      "A subclass of data.Task is required");
+  assert(options.TaskGraph, "A subclass of data.TaskGraph is required");
   assert(options.publisher instanceof base.Exchanges.Publisher,
          "An instance of base.Exchanges.Publisher is required");
   assert(options.queue instanceof taskcluster.Queue,
@@ -53,19 +50,19 @@ Handlers.prototype.setup = function() {
 
   // Create listener
   this.listener = new taskcluster.Listener({
-    connectionString:     options.connectionString,
-    queueName:            options.queueName
+    connectionString:     this.connectionString,
+    queueName:            this.queueName
   });
 
   // Binding for completed tasks
-  var completedBinding = this._queueEvents.taskCompleted({
-    routing:    options.schedulerId + '.#'
+  var completedBinding = this.queueEvents.taskCompleted({
+    routing:    this.schedulerId + '.#'
   });
   this.listener.bind(completedBinding);
 
   // Binding for failed tasks
-  var failedBinding = this._queueEvents.taskFailed({
-    routing:    options.schedulerId + '.#'
+  var failedBinding = this.queueEvents.taskFailed({
+    routing:    this.schedulerId + '.#'
   });
   this.listener.bind(failedBinding);
 
