@@ -32,10 +32,12 @@ var launch = function(profile) {
 
   // Configure Task and TaskGraph entities
   var Task = data.Task.configure({
+    schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
     credentials:      cfg.get('azureTable')
   });
   var TaskGraph = data.TaskGraph.configure({
+    schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
     credentials:      cfg.get('azureTable')
   });

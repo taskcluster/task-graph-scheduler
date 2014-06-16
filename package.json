@@ -18,7 +18,7 @@
     "superagent-promise":               "0.1.0",
     "slugid":                           "1.0.1",
     "taskcluster-client":               "0.6.0",
-    "taskcluster-base":                 "0.0.12"
+    "taskcluster-base":                 "0.1.0"
   },
   "devDependencies": {
     "nodeunit":                         "0.8.6"

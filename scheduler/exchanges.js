@@ -19,7 +19,7 @@ var exchanges = new base.Exchanges({
     "**Remark**, the task-graph scheduler will prefix the task specific",
     "routing key with `<schedulerId>.<taskGraphId>.<taskRoutingKey>.`,",
     "this makes it easy to use AMQP exchanges from the queue to monitor",
-    "beginning and end of individual tasks within a given task-graph."
+    "beginning and end of individual tasks within a given task-graph.",
     "",
     "In production the `schedulerId` is normally `task-graph-scheduler`.",
     "This means that if you want notifications about task progress for a",
@@ -45,37 +45,31 @@ var commonRoutingKey = [
   {
     name:             'taskId',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
     name:             'runId',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          3
   }, {
     name:             'workerGroup',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
     name:             'workerId',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
     name:             'provisionerId',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
     name:             'workerType',
     summary:          "Always takes the value `_`",
-    multipleWords:    false,
     required:         false,
     maxSize:          22
   }, {
@@ -83,18 +77,16 @@ var commonRoutingKey = [
     summary:          "Identifier for the task-graphs scheduler managing the " +
                       "task-graph this message concerns. Usually " +
                       "`task-graph-scheduler` in production.",
-    multipleWords:    false
     required:         true,
     maxSize:          22
   }, {
     name:             'taskGraphId',
     summary:          "Identifier for the task-graph this message concerns",
-    multipleWords:    false
     required:         true,
     maxSize:          22
   }, {
     name:             'routing',
-    summary:          "task-graph specific routing key (`taskGraph.routing`)"
+    summary:          "task-graph specific routing key (`taskGraph.routing`)",
     multipleWords:    true,
     required:         true,
     maxSize:          64
