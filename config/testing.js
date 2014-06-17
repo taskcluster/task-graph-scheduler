@@ -6,7 +6,7 @@ module.exports = {
 
     publishMetaData:              'false',
 
-    exchangePrefix:               'scheduler/v1/',
+    exchangePrefix:               'tests/scheduler/v1/',
 
     listenerQueueName:            undefined,
   },
@@ -14,11 +14,6 @@ module.exports = {
   server: {
     publicUrl:                      'http://localhost:3030',
     port:                           3030
-  },
-
-  // Use local AMQP installation
-  amqp: {
-    url:                          'amqp://guest:guest@localhost:5672'
   },
 
   aws: {

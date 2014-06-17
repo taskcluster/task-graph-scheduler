@@ -156,7 +156,8 @@ api.declare({
   // When tasks are defined we have to substitute parameters and validate posted
   // json input against schema. Then we translate task labels to ids and upload
   // all tasks to PUT URLs without scheduling them just yet
-  return tasks_defined.then(function(taskIdToPutUrlMapping) {
+  return tasks_defined.then(function(taskPutUrls) {
+    var taskIdToPutUrlMapping = taskPutUrls.tasks;
     // Find task ids we've been assigned
     var availableTaskIds = _.keys(taskIdToPutUrlMapping);
 
@@ -314,6 +315,7 @@ api.declare({
                 taskNode.taskId, res.text);
           throw new Error("Failed to upload task to put URLs");
         }
+
         return res.body;
       });
     }));

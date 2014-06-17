@@ -92,6 +92,9 @@ var launch = function(profile) {
     return handlers.setup();
   }).then(function() {
     debug('Handlers are now listening for events');
+
+    // Notify parent process, so that this worker can run using LocalApp
+    base.app.notifyLocalAppInParentProcess();
   });
 };
 
