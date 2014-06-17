@@ -1,9 +1,10 @@
-#! /bin/bash -vex
+#!/bin/bash -ve
+# USAGE: Run this file using `npm test` (must run from repository root)
 
-./node_modules/.bin/nodeunit  \
-  tests/data_test.js          \
-  tests/rerun_test.js         \
-  tests/scheduler_test.js     \
-  tests/validate_test.js      \
-  tests/jsonsubs_test.js
-
+mocha                               \
+  test/validate_test.js             \
+  test/data_test.js                 \
+  test/jsonsubs_test.js             \
+  test/rerun_test.js                \
+  test/scheduler_test.js            \
+  ;
