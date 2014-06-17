@@ -181,5 +181,4 @@ suite('scheduler (extra)', function() {
       return done;
     });
   });
-
 });
