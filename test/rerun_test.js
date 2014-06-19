@@ -54,8 +54,9 @@ suite('scheduler (extra)', function() {
     "version":                "0.2.0",
     "params":                 {},
     "routing":                "",
-    "tasks": {
-      "print-once": {
+    "tasks": [
+      {
+        "label":              "print-once",
         "requires":           [],
         "reruns":             2,
         "task": {
@@ -90,7 +91,8 @@ suite('scheduler (extra)', function() {
           }
         }
       },
-      "print-twice": {
+      {
+        "label":              "print-twice",
         "requires":           ["print-once"],
         "reruns":             0,
         "task": {
@@ -125,7 +127,7 @@ suite('scheduler (extra)', function() {
           }
         }
       }
-    },
+    ],
     "metadata": {
       "name":         "Validation Test TaskGraph",
       "description":  "Task-graph description in markdown",

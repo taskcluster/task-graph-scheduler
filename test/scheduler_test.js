@@ -6,6 +6,7 @@ suite('scheduler (extra)', function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var exchanges   = require('../scheduler/exchanges');
+  var debug       = require('debug')('scheduler:test:scheduler_test');
 
   // Configure server
   var server = new base.testing.LocalApp({
@@ -56,8 +57,9 @@ suite('scheduler (extra)', function() {
       "test-worker-type":     "test-worker"
     },
     "routing":                "",
-    "tasks": {
-      "print-once": {
+    "tasks": [
+      {
+        "label":              "print-once",
         "requires":           [],
         "reruns":             0,
         "task": {
@@ -92,7 +94,8 @@ suite('scheduler (extra)', function() {
           }
         }
       },
-      "print-twice": {
+      {
+        "label":              "print-twice",
         "requires":           ["print-once"],
         "reruns":             0,
         "task": {
@@ -128,7 +131,7 @@ suite('scheduler (extra)', function() {
           }
         }
       }
-    },
+    ],
     "metadata": {
       "name":         "Validation Test TaskGraph",
       "description":  "Task-graph description in markdown",
@@ -178,6 +181,9 @@ suite('scheduler (extra)', function() {
         .send(taskGraphExample)
         .end()
         .then(function(res) {
+          if (!res.ok) {
+            debug(JSON.stringify(res.body, null, 2));
+          }
           assert(res.ok, "Failed to submit task-graph");
           taskGraphId = res.body.status.taskGraphId;
         });

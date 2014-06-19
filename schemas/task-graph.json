@@ -24,13 +24,18 @@
     "routing":          {"$const": "routing"},
     "tasks": {
       "title":                  "Tasks",
-      "description":            "Mapping from task-labels to task definition and scheduling preferences, such as number of _reruns_ to attempt.",
-      "type":                   "object",
-      "additionalProperties": {
+      "description":            "List of nodes in the task-graph, eaching featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.",
+      "type":                   "array",
+      "items": {
         "title":                "Task",
         "description":          "Representation of a tasks in the task-graph",
         "type":                 "object",
         "properties": {
+          "label": {
+            "title":            "Task Label",
+            "description":      "Task label used to reference the task in lists of required tasks for other task nodes and to substitute in `taskId` using the pattern `{{taskId:<task-label>}}`",
+            "type":             "string"
+          },
           "requires": {
             "title":            "Required tasks",
             "description":      "List of required task labels",
@@ -51,7 +56,7 @@
           },
           "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
         },
-        "required":             ["requires", "reruns", "task"]
+        "required":             ["label", "requires", "reruns", "task"]
       }
     },
     "metadata": {

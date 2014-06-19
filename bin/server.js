@@ -123,7 +123,7 @@ if (!module.parent) {
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched authentication server successfully");
+    debug("Launched server successfully");
   }).catch(function(err) {
     debug("Failed to start server, err: %s, as JSON: %j", err, err, err.stack);
     // If we didn't launch the server we should crash
