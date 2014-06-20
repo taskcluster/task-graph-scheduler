@@ -1,0 +1,13 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Extended Message",
+  "description":  "Messages as posted to `scheduler/v1/task-graph-extended` informing the world that a task-graph have been extended.",
+  "type":         "object",
+  "properties": {
+    "version":    {"$const": "message-version"},
+    "status":     {"$ref": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#"}
+  },
+  "additionalProperties":       false,
+  "required":                   ["version", "status"]
+}

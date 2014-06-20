@@ -4,6 +4,7 @@ var Promise     = require('promise');
 var debug       = require('debug')('scheduler:handlers');
 var _           = require('lodash');
 var base        = require('taskcluster-base');
+var helpers     = require('./helpers');
 
 /**
  * Create handlers
@@ -86,43 +87,6 @@ Handlers.prototype.setup = function() {
 
 // Export Handlers
 module.exports = Handlers;
-
-/** Scheduler dependent tasks */
-Handlers.prototype.scheduleDependentTasks = function(task) {
-  var that = this;
-  // Let's load, modify and schedule all dependent tasks that are ready
-  return Promise.all(task.dependents.map(function(dependentTaskId) {
-    // First we load the dependent task
-    return that.Task.load(
-      task.taskGraphId,
-      dependentTaskId
-    ).then(function(dependentTask) {
-      assert(dependentTask.taskId == dependentTaskId, "Just a sanity check");
-      // Then we modify the dependent task
-      return dependentTask.modify(function() {
-        // If the successfully completed task isn't required by the dependent
-        // task then we don't need to modify or schedule it
-        if (!_.contains(this.requiresLeft, task.taskId)) {
-          return;
-        }
-
-        // Now we know the successful task is blocking, we remove it
-        this.requiresLeft = _.without(this.requiresLeft, task.taskId);
-
-        // If no other tasks are blocked the dependent tasks then we should
-        // schedule it.
-        if (this.requiresLeft.length == 0) {
-          // Note, that on the queue this is an idempotent operation, so it is
-          // not a problem if we do this more than once.
-          return that.queue.scheduleTask(dependentTaskId).catch(function(err) {
-            debug("Failed to schedule task: %s", dependentTaskId);
-            throw err;
-          });
-        }
-      });
-    });
-  }));
-};
 
 /**
  * Check if the task-graph is finished and given a `successfulTaskId` is a leaf
@@ -297,7 +261,7 @@ Handlers.prototype.completed = function(message) {
         if (task.dependents.length != 0) {
           // There are dependent tasks, when we should try to schedule those
           debug("Scheduling dependent tasks");
-          return that.scheduleDependentTasks(task);
+          return helpers.scheduleDependentTasks(task, that.queue, that.Task);
         } else {
           // If there is no dependent tasks then we should check if the task-
           // graph is finished

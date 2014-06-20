@@ -127,7 +127,7 @@ exports.prepareTasks = function(input, options) {
     }, {});
 
     // Parameterize input
-    input = jsonsubs(input, _.defaults(options.params || {}, taskIdParams, {
+    input = jsonsubs(input, _.defaults({}, options.params || {}, taskIdParams, {
       taskGraphId:  options.taskGraphId
     }));
 
@@ -304,7 +304,7 @@ exports.prepareTasks = function(input, options) {
           var newDependents = input.tasks.filter(function(taskNode) {
             return _.contains(taskNode.requires, task.label);
           }).map(function(taskNode) {
-            return labelToInfo[taskNode].taskId;
+            return labelToInfo[taskNode.label].taskId;
           });
 
           // Add new dependent tasks to dependents
@@ -320,3 +320,48 @@ exports.prepareTasks = function(input, options) {
   });
 };
 
+/**
+ * Schedule dependent tasks, if the resolution of task caused them to be
+ * scheduled.
+ */
+exports.scheduleDependentTasks = function(task, queue, Task) {
+  // Validate input
+  assert(queue instanceof taskcluster.Queue,
+         "Instance of taskcluster.Queue is required");
+  assert(Task, "Instance of data.Task is required");
+  assert(task.resolution &&
+         task.resolution.success, "Task must have been resolved successfully");
+
+  // Let's load, modify and schedule all dependent tasks that are ready
+  return Promise.all(task.dependents.map(function(dependentTaskId) {
+    // First we load the dependent task
+    return Task.load(
+      task.taskGraphId,
+      dependentTaskId
+    ).then(function(dependentTask) {
+      assert(dependentTask.taskId == dependentTaskId, "Just a sanity check");
+      // Then we modify the dependent task
+      return dependentTask.modify(function() {
+        // If the successfully completed task isn't required by the dependent
+        // task then we don't need to modify or schedule it
+        if (!_.contains(this.requiresLeft, task.taskId)) {
+          return;
+        }
+
+        // Now we know the successful task is blocking, we remove it
+        this.requiresLeft = _.without(this.requiresLeft, task.taskId);
+
+        // If no other tasks are blocked the dependent tasks then we should
+        // schedule it.
+        if (this.requiresLeft.length == 0) {
+          // Note, that on the queue this is an idempotent operation, so it is
+          // not a problem if we do this more than once.
+          return queue.scheduleTask(dependentTaskId).catch(function(err) {
+            debug("Failed to schedule task: %s", dependentTaskId);
+            throw err;
+          });
+        }
+      });
+    });
+  }));
+};

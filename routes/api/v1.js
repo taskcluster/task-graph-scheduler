@@ -8,10 +8,8 @@ var assert      = require('assert');
 var base        = require('taskcluster-base');
 var helpers     = require('../../scheduler/helpers');
 
-// TODO: Move request to super-agent promise
-
-// Remove querystring things...
-var querystring = require('querystring');
+// Common schema prefix
+var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/scheduler/v1/';
 
 /**
  * API end-point for version v1/
@@ -50,9 +48,9 @@ api.declare({
   method:         'post',
   route:          '/task-graph/create',
   name:           'createTaskGraph',
-  input:          'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
+  input:          SCHEMA_PREFIX_CONST + 'task-graph.json#',
   skipInputValidation:  true, // we'll do this after parameter substitution
-  output:         'http://schemas.taskcluster.net/scheduler/v1/create-task-graph-response.json#',
+  output:         SCHEMA_PREFIX_CONST + 'create-task-graph-response.json#',
   title:          "Create new task-graph",
   description: [
     "Create a new task-graph, the `status` of the resulting JSON is a",
@@ -153,7 +151,7 @@ api.declare({
     existingTasks:    [],
     queue:            ctx.queue,
     routing:          undefined,
-    schema:           'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
+    schema:           SCHEMA_PREFIX_CONST + 'task-graph.json#',
     validator:        ctx.validator
   }).then(function(result) {
     if (result.error || !result.tasks) {
@@ -189,7 +187,7 @@ api.declare({
       return Promise.all(result.tasks.map(function(task) {
         return ctx.Task.create(task);
       })).then(function(tasks) {
-        // Schedule dependent tasks...
+        // Schedule initial tasks...
         return Promise.all(tasks.filter(function(task) {
           return task.requires.length === 0;
         }).map(function(task) {
@@ -209,6 +207,144 @@ api.declare({
   });
 });
 
+/** Post a task-graph decision to extend a task-graph */
+api.declare({
+    method:       'post',
+  route:          '/task-graph/:taskGraphId/extend',
+  name:           'extendTaskGraph',
+  input:          SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
+  skipInputValidation:  true, // we'll do this after parameter substitution
+  output:         SCHEMA_PREFIX_CONST + 'extend-task-graph-response.json#',
+  title:          "Extend existing task-graph",
+  description: [
+    "Add a set of tasks to an existing task-graph. The request format is very",
+    "similar to the request format for creating task-graphs. But `routing`",
+    "prefix, `metadata` and `tags` cannot be modified and tasks added to the",
+    "task-graph will be prefixed with the same routing key as the existing",
+    "tasks. See `createTaskGraph` for details in routing key prefixing.",
+    "",
+    "**Parameter substitution**, tasks added to a task-graph using this API",
+    "end-point are subjected to the same parameter substitution as when the",
+    "task-graph was created. The `params` from request payload can be used to",
+    "add extend and overwrite parameters substituted. Note, that parameters",
+    "modified by `params` submitted here will not be stored and used in",
+    "future calls to this API end-point.",
+    "",
+    "**Task-labels**, just as when task-graphs are created, each task is",
+    "assigned a label. These are used to reference required tasks and to",
+    "substitute in the `taskId` a task using the pattern `{{taskId:<label>}}`.",
+    "",
+    "It is possible to reference task labels of the existing tasks, and the",
+    "labels of the new tasks must be unique within the task-graph, and cannot",
+    "conflict with the labels of the existing tasks.",
+    "",
+    "**Safety,** it is only _safe_ to call this API end-point while the",
+    "task-graph being modified is still running. If the task-graph is",
+    "_finished_ or _blocked_, this method will leave the task-graph in this",
+    "state. Hence, it is only truly _safe_ to call this API end-point from",
+    "within a task in the task-graph being modified."
+  ].join('\n')
+}, function(req, res) {
+  var ctx = this;
+  var input       = req.body;
+  var taskGraphId = req.params.taskGraphId;
+
+  // Load task graph and tasks
+  var taskGraph       = null;
+  var existingTasks   = null;
+  var existingTaskIds = null;
+  var gotTaskGraph = Promise.all(
+    ctx.TaskGraph.load(taskGraphId),
+    ctx.Task.loadGraphTasks(taskGraphId)
+  ).then(function(values) {
+    taskGraph       = values.shift();
+    existingTasks   = values.shift();
+    existingTaskIds = existingTasks.map(function(task) {
+      return task.taskId;
+    });
+  });
+
+  // Prepare tasks
+  return gotTaskGraph.then(function() {
+    return helpers.prepareTasks(input, {
+      taskGraphId:      taskGraphId,
+      params:           _.defaults(input.params, taskGraph.details.params),
+      schedulerId:      ctx.schedulerId,
+      existingTasks:    existingTasks,
+      queue:            ctx.queue,
+      routing:          taskGraph.routing,
+      schema:           SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
+      validator:        ctx.validator
+    }).then(function(result) {
+      if (result.error || !result.tasks) {
+        return res.json(400, result);
+      }
+
+      // Find new leaf tasks that the task-graph should depend on
+      var newRequires = result.tasks.filter(function(task) {
+        return task.dependents.length == 0;
+      }).map(function(task) {
+        return task.taskId;
+      });
+
+      // Find old tasks that should be required by the task-graph
+      var OldRequires = existingTasks.filter(function(task) {
+        return task.dependents.length === 0;
+      }).map(function(task) {
+        return task.taskId;
+      });
+
+      // Update task-graph with new tasks that it should wait for
+      return taskGraph.modify(function() {
+        // Update requires, removing tasks that have dependents and adding new
+        // required tasks
+        this.requires = _.intersection(
+          this.requires,
+          OldRequires
+        ).concat(newRequires);
+
+        // Update requiresLeft the same way
+        this.requiresLeft = _.intersection(
+          this.requiresLeft,
+          OldRequires
+        ).concat(newRequires);
+      }).then(function() {
+        return Promise.all(result.tasks.map(function(task) {
+          return ctx.Task.create(task);
+        })).then(function(tasks) {
+          // Schedule initial tasks...
+          return Promise.all(tasks.filter(function(task) {
+            return task.requires.length === 0;
+          }).map(function(task) {
+            return ctx.queue.scheduleTask(task.taskId);
+          }));
+        }).then(function() {
+          // Load all tasks, so we can ensure that tasks are scheduled, if one
+          // of the required tasks was resolved...
+          return ctx.Task.loadGraphTasks(taskGraphId);
+        }).then(function(tasks) {
+          // Find existing that is resolved successfully
+          return Promise.all(tasks.filter(function(task) {
+            return task.resolution &&
+                   task.resolution.success &&
+                   _.contains(existingTaskIds, task.taskId);
+          }).map(function(task) {
+            return helpers.scheduleDependentTasks(task);
+          }));
+        }).then(function() {
+          debug("Publishing event about taskGraphId: %s", taskGraphId);
+          return ctx.publisher.taskGraphExtended({
+            status:               taskGraph.status()
+          });
+        }).then(function() {
+          return res.reply({
+            status:               taskGraph.status()
+          });
+       });
+      });
+    });
+  });
+});
 
 
 /** Get task-graph status */
@@ -217,7 +353,7 @@ api.declare({
   route:      '/task-graph/:taskGraphId/status',
   name:       'getTaskGraphStatus',
   input:      undefined,
-  output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json',
+  output:     SCHEMA_PREFIX_CONST + 'task-graph-status-response.json',
   title:      "Task Graph Status",
   description: [
     "Get task-graph status, this will return the _task-graph status",
@@ -244,7 +380,7 @@ api.declare({
   route:      '/task-graph/:taskGraphId/info',
   name:       'getTaskGraphInfo',
   input:      undefined,
-  output:     'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json',
+  output:     SCHEMA_PREFIX_CONST + 'task-graph-info-response.json',
   title:      "Task Graph Information",
   description: [
     "Get task-graph information, this includes the _task-graph status",
@@ -275,7 +411,7 @@ api.declare({
   route:      '/task-graph/:taskGraphId/inspect',
   name:       'inspectTaskGraph',
   input:      undefined,
-  output:     'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json',
+  output:     SCHEMA_PREFIX_CONST + 'inspect-task-graph-response.json',
   title:      "Inspect Task Graph",
   description: [
     "Inspect a task-graph, this returns all the information the task-graph",

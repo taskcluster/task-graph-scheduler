@@ -1,0 +1,28 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Task-Graph Definition",
+  "description":  "Definition of a task-graph that can be scheduled",
+  "type":               "object",
+  "properties": {
+    "version": {
+      "title":          "Version",
+      "description":    "Task-graph definition version",
+      "enum":           ["0.2.0"]
+    },
+    "params": {
+      "title":          "Parameters",
+      "type":           "object",
+      "description":    "Parameters that will be substituted into keys and strings of this object. This is useful for substituting repository, revision, owner, and other things like that. It is not recommended that this is used to modify task labels, nor is recursive substitution supported.",
+      "additionalProperties": {
+        "title":        "Parameter Value",
+        "description":  "Value to be substituted in for a parameter",
+        "type":         "string",
+        "maxLength":    4096
+      }
+    },
+    "tasks":            {"$const": "task-nodes"}
+  },
+  "additionalProperties":       false,
+  "required": ["version", "params", "tasks"]
+}

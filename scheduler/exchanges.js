@@ -127,6 +127,21 @@ exchanges.declare({
   routingKeyBuilder:  commonRoutingKeyBuilder
 });
 
+/** Task-graph extended exchange */
+exchanges.declare({
+  exchange:           'task-graph-extended',
+  name:               'taskGraphExtended',
+  title:              "Task-Graph Extended Message",
+  description: [
+    "When a task-graph is submitted it immediately starts running and a",
+    "message is posted on this exchange to indicate that a task-graph have",
+    "been submitted."
+  ].join('\n'),
+  routingKey:         commonRoutingKey,
+  schema:             SCHEMA_PREFIX_CONST + 'task-graph-extended-message.json#',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  commonRoutingKeyBuilder
+});
 
 /** Task-graph blocked exchange */
 exchanges.declare({

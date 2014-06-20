@@ -1,4 +1,4 @@
-suite('scheduler (rerun)', function() {
+suite('scheduler (extend)', function() {
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var request     = require('superagent-promise');
@@ -6,6 +6,7 @@ suite('scheduler (rerun)', function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var exchanges   = require('../scheduler/exchanges');
+  var debug       = require('debug')('scheduler:test:scheduler_test');
 
   // Configure server
   var server = new base.testing.LocalApp({
@@ -52,17 +53,19 @@ suite('scheduler (rerun)', function() {
   // Task graph that'll post in this test
   var taskGraphExample = {
     "version":                "0.2.0",
-    "params":                 {},
+    "params":                 {
+      "test-worker-type":     "test-worker"
+    },
     "routing":                "",
     "tasks": [
       {
         "label":              "print-once",
         "requires":           [],
-        "reruns":             2,
+        "reruns":             0,
         "task": {
           "version":          "0.2.0",
           "provisionerId":    "aws-provisioner",
-          "workerType":       "test-worker",
+          "workerType":       "{{test-worker-type}}",
           "routing":          "",
           "timeout":          600,
           "retries":          3,
@@ -73,7 +76,7 @@ suite('scheduler (rerun)', function() {
             "image":          "ubuntu:latest",
             "command": [
               "/bin/bash", "-c",
-              "exit 1"
+              "echo 'Hello World'"
             ],
             "features": {
               "azureLivelog": true
@@ -98,7 +101,7 @@ suite('scheduler (rerun)', function() {
         "task": {
           "version":          "0.2.0",
           "provisionerId":    "aws-provisioner",
-          "workerType":       "test-worker",
+          "workerType":       "{{test-worker-type}}",
           "routing":          "",
           "timeout":          600,
           "retries":          3,
@@ -118,7 +121,8 @@ suite('scheduler (rerun)', function() {
           },
           "metadata": {
             "name":           "Print `'Hello World'` Again",
-            "description":    "This task will prìnt `'Hello World'` **again**!",
+            "description":    "This task will prìnt `'Hello World'` **again**! " +
+                              "and wait for {{taskId:print-once}}.",
             "owner":          "jojensen@mozilla.com",
             "source":         "https://github.com/taskcluster/task-graph-scheduler"
           },
@@ -139,7 +143,53 @@ suite('scheduler (rerun)', function() {
     }
   };
 
-  test('rerun', function() {
+  var taskGraphExtension = {
+    "version":                "0.2.0",
+    "params": {
+      "common-command":       "/bin/bash",
+    },
+    "tasks": [
+      {
+        "label":              "print-third",
+        "requires":           ["print-once", "print-twice"],
+        "reruns":             0,
+        "task": {
+          "version":          "0.2.0",
+          "provisionerId":    "aws-provisioner",
+          "workerType":       "{{test-worker-type}}",
+          "routing":          "",
+          "timeout":          600,
+          "retries":          3,
+          "priority":         5,
+          "created":          "2014-03-01T22:19:32.124Z",
+          "deadline":         "2060-03-01T22:19:32.124Z",
+          "payload": {
+            "image":          "ubuntu:latest",
+            "command": [
+              "{{common-command}}", "-c",
+              "echo 'Hello World (Again)'"
+            ],
+            "features": {
+              "azureLivelog": true
+            },
+            "maxRunTime":     600
+          },
+          "metadata": {
+            "name":           "Print `'Hello World'` Again",
+            "description":    "This task will prìnt `'Hello World'` **again**! " +
+                              "and wait for {{taskId:print-once}}.",
+            "owner":          "jojensen@mozilla.com",
+            "source":         "https://github.com/taskcluster/task-graph-scheduler"
+          },
+          "tags": {
+            "objective":      "Test task-graph scheduler"
+          }
+        }
+      }
+    ]
+  };
+
+  test('extend task-graph', function() {
     this.timeout('8m');
 
     // Create listener
@@ -154,7 +204,7 @@ suite('scheduler (rerun)', function() {
     var schedulerEvents = new SchedulerEvents();
 
     // Bind to exchange
-    listener.bind(schedulerEvents.taskGraphBlocked({
+    listener.bind(schedulerEvents.taskGraphFinished({
       schedulerId:      cfg.get('scheduler:schedulerId')
     }));
 
@@ -176,8 +226,37 @@ suite('scheduler (rerun)', function() {
         .send(taskGraphExample)
         .end()
         .then(function(res) {
+          if (!res.ok) {
+            debug(JSON.stringify(res.body, null, 2));
+          }
           assert(res.ok, "Failed to submit task-graph");
           taskGraphId = res.body.status.taskGraphId;
+        });
+    }).then(function() {
+      return request
+        .post(baseUrl + '/task-graph/' + taskGraphId + '/extend')
+        .send(taskGraphExtension)
+        .end()
+        .then(function(res) {
+          if (!res.ok) {
+            debug(JSON.stringify(res.body, null, 2));
+          }
+          assert(res.ok, "Failed to submit task-graph");
+          taskGraphId = res.body.status.taskGraphId;
+        })
+    }).then(function() {
+      return request
+        .get(baseUrl + '/task-graph/' + taskGraphId + '/inspect')
+        .end()
+        .then(function(res) {
+          assert(res.ok, "Fetched info without error");
+          assert(res.body.params, "Check params isn't missing");
+          assert(res.body.status.taskGraphId == taskGraphId,
+                 "got right taskGraphId");
+          assert(res.body.tags.MyTestTag == "Hello World", "Got tag");
+          assert(res.body.status.state == 'running', "got right state");
+          assert(res.body.tasks['print-third'].requires.length == 2,
+                 "got requires right");
         });
     }).then(function() {
       return done;

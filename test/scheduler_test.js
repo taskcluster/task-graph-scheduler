@@ -1,4 +1,4 @@
-suite('scheduler (extra)', function() {
+suite('scheduler (task-graph)', function() {
   var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var request     = require('superagent-promise');
@@ -144,7 +144,7 @@ suite('scheduler (extra)', function() {
   };
 
 
-  test('scheduler, status, info and inspect', function() {
+  test('create, status, info and inspect', function() {
     this.timeout('8m');
 
     // Create listener
