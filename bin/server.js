@@ -23,9 +23,8 @@ var launch = function(profile) {
       'amqp_url',
       'aws_accessKeyId',
       'aws_secretAccessKey',
-      'azureTable_accountUrl',
-      'azureTable_accountName',
-      'azureTable_accountKey'
+      'azure_accountName',
+      'azure_accountKey'
     ],
     filename:     'task-graph-scheduler'
   });

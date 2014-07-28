@@ -55,9 +55,8 @@ module.exports = {
     url:                            undefined
   },
 
-  // Azure table credentials (usually configured using environment variables)
-  azureTable: {
-    accountUrl:                     null,
+  // Azure credentials (usually configured using environment variables)
+  azure: {
     accountName:                    null,
     accountKey:                     null
   },
