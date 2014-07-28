@@ -15,12 +15,14 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/scheduler/v1/';
  *
  * In this API implementation we shall assume the following context:
  * {
- *   Task:        // Instance of Task from data.js
- *   TaskGraph:   // Instance of TaskGraph from data.js
- *   publisher:   // Publisher from base.Exchanges
- *   credentials: // Credentials for taskcluster.Queue
- *   schedulerId: // schedulerId from configuration
- *   validator:   // JSON validator created with base.validator
+ *   Task:          // Instance of Task from data.js
+ *   TaskGraph:     // Instance of TaskGraph from data.js
+ *   publisher:     // Publisher from base.Exchanges
+ *   queue:         // Instance of taskcluster.Queue with scheduler credentials
+ *   credentials:   // Credentials for taskcluster.Queue
+ *   queueBaseUrl:  // BaseUrl for taskcluster-queue
+ *   schedulerId:   // schedulerId from configuration
+ *   validator:     // JSON validator created with base.validator
  * }
  */
 var api = new base.API({
@@ -107,9 +109,11 @@ api.declare({
     "the task-graph has. The task-graph scheduler will execute all requests",
     "on behalf of a task-graph using the set of scopes assigned to the",
     "task-graph. Thus, if you are submitting tasks to `my-worker-type` under",
-    "`my-provisioner` it's important that your task-graph is assigned scopes",
-    "required to defined and schedule task for this `provisionerId` and",
-    "`workerType`. See the queue for details on permissions required."
+    "`my-provisioner` it's important that your task-graph has the scope",
+    "required to define tasks for this `provisionerId` and `workerType`.",
+    "See the queue for details on permissions required. Note, the task-graph",
+    "does not require permissions to schedule the tasks. This is done with",
+    "scopes provided by the task-graph scheduler."
   ].join('\n')
 }, function(req, res) {
   var ctx         = this;
@@ -125,6 +129,7 @@ api.declare({
   // Create queue API client delegating scopes this task-graph is authorized
   // to use
   var queue = new taskcluster.Queue({
+    baseUrl:        ctx.queueBaseUrl,
     credentials:  _.defaults({
       delegating:   true,
       scopes:       input.scopes
@@ -200,6 +205,8 @@ api.declare({
     method:       'post',
   route:          '/task-graph/:taskGraphId/extend',
   name:           'extendTaskGraph',
+  scopes:         ['scheduler:post:extend-task-graph:<taskGraphId>'],
+  deferAuth:      true,
   input:          SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
   output:         SCHEMA_PREFIX_CONST + 'task-graph-status-response.json#',
   title:          "Extend existing task-graph",
@@ -225,6 +232,13 @@ api.declare({
   var input       = req.body;
   var taskGraphId = req.params.taskGraphId;
 
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    taskGraphId:    taskGraphId,
+  })) {
+    return;
+  }
+
   // Load task graph and tasks
   var taskGraph       = null;
   var existingTasks   = null;
@@ -242,6 +256,7 @@ api.declare({
     // Create queue API client delegating scopes this task-graph is authorized
     // to use
     queue = new taskcluster.Queue({
+      baseUrl:        ctx.queueBaseUrl,
       credentials:  _.defaults({
         delegating:   true,
         scopes:       taskGraph.scopes

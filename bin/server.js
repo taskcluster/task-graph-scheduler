@@ -87,6 +87,8 @@ var launch = function(profile) {
         TaskGraph:      TaskGraph,
         publisher:      publisher,
         queue:          queue,
+        credentials:    cfg.get('taskcluster:credentials'),
+        queueBaseUrl:   cfg.get('taskcluster:queueBaseUrl'),
         schedulerId:    cfg.get('scheduler:schedulerId'),
         validator:      validator
       },
