@@ -33,12 +33,12 @@ var launch = function(profile) {
   var Task = data.Task.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
   var TaskGraph = data.TaskGraph.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
 
   // Setup AMQP exchanges and create a publisher

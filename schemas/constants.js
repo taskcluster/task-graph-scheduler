@@ -42,42 +42,20 @@ module.exports = {
     "maxLength":    64
   },
 
-  // List of task nodes
-  "task-nodes": {
-    "title":                  "Tasks",
-    "description":            "List of nodes in the task-graph, eaching featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.",
-    "type":                   "array",
+  // Task-Graph scopes
+  "scopes": {
+    "title":        "Scopes",
+    "description":  "List of scopes (or scope-patterns) that tasks of the "+
+                    "task-graph is authorized to use.",
+    "type":         "array",
     "items": {
-      "title":                "Task Node",
-      "description":          "Representation of a tasks in the task-graph",
-      "type":                 "object",
-      "properties": {
-        "label": {
-          "title":            "Task Label",
-          "description":      "Task label used to reference the task in lists of required tasks for other task nodes and to substitute in `taskId` using the pattern `{{taskId:<task-label>}}`",
-          "type":             "string"
-        },
-        "requires": {
-          "title":            "Required tasks",
-          "description":      "List of required task labels",
-          "type":             "array",
-          "items": {
-            "title":          "Required task-label",
-            "description":    "Label for task that is required to be _successfully completed_ before this task is scheduled.",
-            "type":           "string",
-            "maxLength":      255
-          }
-        },
-        "reruns": {
-          "title":            "Re-runs",
-          "description":      "Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.",
-          "type":             "integer",
-          "minimum":          0,
-          "maximum":          999
-        },
-        "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
-      },
-      "required":             ["label", "requires", "reruns", "task"]
+      "title":        "Scope",
+      "description":  "A scope (or scope-patterns) which a task of the " +
+                      "task-graph is authorized to use. " +
+                      "This can be a string or a string ending with `*` " +
+                      "which will authorize all scopes for which the string " +
+                      "is a prefix.",
+      "type":         "string"
     }
   }
 };
