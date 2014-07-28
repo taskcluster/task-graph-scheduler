@@ -17,11 +17,12 @@
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
     },
-    "state":            {"$const": "state"},
-    "routing":          {"$const": "routing"}
+    "state":            {"$const": "state"}
   },
   "additionalProperties":   false,
   "required": [
-    "taskGraphId", "schedulerId", "state", "routing"
+    "taskGraphId",
+    "schedulerId",
+    "state"
   ]
 }

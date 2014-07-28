@@ -9,8 +9,8 @@
     "tasks": {
       "title":                  "Tasks",
       "description":            "Mapping from task-labels to task information and state.",
-      "type":                   "object",
-      "additionalProperties": {
+      "type":                   "array",
+      "items": {
         "title":                "Task Information",
         "description":          "Information about a tasks in the task-graph",
         "type":                 "object",
@@ -20,12 +20,6 @@
             "title":          "Task Identifier",
             "description":    "Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
             "pattern":        {"$const": "slugid-pattern"}
-          },
-          "taskUrl": {
-            "title":        "Task definition URL",
-            "description":  "URL from which task definition can be fetched",
-            "type":         "string",
-            "format":       "uri"
           },
           "requires": {
             "title":            "Required tasks",
@@ -81,20 +75,14 @@
           }
         },
         "required": [
-          "taskId", "taskUrl", "requires", "requiresLeft", "reruns",
-          "rerunsLeft", "resolution", "dependents"
+          "taskId",
+          "requires",
+          "requiresLeft",
+          "reruns",
+          "rerunsLeft",
+          "resolution",
+          "dependents"
         ]
-      }
-    },
-    "params": {
-      "title":          "Parameters",
-      "type":           "object",
-      "description":    "Parameters that was substituted into keys and strings of task-graph when it was created.",
-      "additionalProperties": {
-        "title":        "Parameter Value",
-        "description":  "Value that was substituted in for a parameter",
-        "type":         "string",
-        "maxLength":    4096
       }
     },
     "metadata": {
@@ -141,6 +129,6 @@
   },
   "additionalProperties":   false,
   "required": [
-    "status", "tasks", "params", "metadata", "tags"
+    "status", "tasks", "metadata", "tags"
   ]
 }

@@ -82,7 +82,9 @@ Handlers.prototype.setup = function() {
   });
 
   // Start listening
-  return this.listener.connect();
+  return this.listener.connect().then(function() {
+    return that.listener.resume();
+  })
 };
 
 // Export Handlers
@@ -131,7 +133,7 @@ Handlers.prototype.checkTaskGraphFinished = function(taskGraphId,
         assert(taskGraph.state == 'finished', "taskGraph should be finished!");
         return that.publisher.taskGraphFinished({
           status:           taskGraph.status()
-        });
+        }, taskGraph.routing);
       }
     });
   });
@@ -160,7 +162,7 @@ Handlers.prototype.blockTaskGraph = function (taskGraphId, blockingTaskId) {
         return that.publisher.taskGraphBlocked({
           status:           taskGraph.status(),
           taskId:           blockingTaskId
-        });
+        }, taskGraph.routing);
       }
       debug("Task-graph: %s was already declared blocked", taskGraphId);
     });

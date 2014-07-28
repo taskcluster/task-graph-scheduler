@@ -95,16 +95,16 @@ var commonRoutingKey = [
 
 /** Build an AMQP compatible message from a message */
 var commonMessageBuilder = function(message) {
-  message.version = '0.2.0';
+  message.version = 1;
   return message;
 };
 
 /** Build a routing-key from message */
-var commonRoutingKeyBuilder = function(message) {
+var commonRoutingKeyBuilder = function(message, routing) {
   return {
     schedulerId:      message.status.schedulerId,
     taskGraphId:      message.status.taskGraphId,
-    routing:          message.status.routing
+    routing:          routing
   };
 };
 

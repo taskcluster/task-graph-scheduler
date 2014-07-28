@@ -20,7 +20,7 @@ module.exports = {
   // Message version numbers
   "message-version": {
     "description":  "Message version",
-    "enum":         ["0.2.0"]
+    "enum":         [1]
   },
 
   // Slugid pattern, for when-ever that is useful
