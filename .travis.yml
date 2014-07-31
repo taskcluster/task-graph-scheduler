@@ -1,13 +1,6 @@
 env:
   global:
-  - DEBUG: >-
-      *
-      -mocha:*
-      -superagent
-      -express:router
-      -express:router:*
-      -base:validator
-      -base:entity'
+  - DEBUG:  '* -mocha:* -superagent -express:router -express:router:* -base:validator -base:entity'
   - secure: eglS+APwgzfCRu35ZgP+1U2v7esRrpook3X1329TzuDLdkf5+azM3AD4FjV82sJZT1oqaOzkpUN4Dsg15bk05H+mNPpvWdItoWurlZkK4ltTpvxCHahTU35q1fD0MzeKHlyZnXYefR7JV18pt1RlXM47BYVmnoO0cckK3aG4AWM=
   - secure: cO9+29DqglNe21fSnkix1bxDqoIJe/M75J95kErW8UwaXu8zDqVXGDib9PTjgHXna0pfjYzdwumTGmpAywV2PUGp139kqJ5iZMBr+1xbEyzd2zZo0KW9Z5OxWKh0iwL3a4GmeTTWzSyrrHRbHKiQT9SYQtCd7KgmZkwOAAEWjy4=
   - secure: XQb+TMDEHkXraq1P/TMqOvSa4BxV3WvH1dfD7JxwwXEa/Ie/buCgWcqodTUsECywbTnamG8xfvpOcdtDyXyCvahnO8BIaWwvlzH/9vyer2f9ju3gR6wYjjHePnHnnp/hvuJNBbThW0Zjgc2kC3sDI8LHFfFtFtTg14eYDz9NY88=
