@@ -23,7 +23,7 @@ module.exports = {
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://scheduler.taskcluster.net',
+    publicUrl:                      'https://scheduler.taskcluster.net',
 
     // Port to listen for requests on
     port:                           undefined

@@ -10,7 +10,7 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                      'http://scheduler.taskcluster.net',
+    publicUrl:                      'https://scheduler.taskcluster.net',
 
     port:                           80
   }
