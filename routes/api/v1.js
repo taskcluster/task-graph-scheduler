@@ -90,10 +90,9 @@ api.declare({
     "```",
     "",
     "**Task routing keys**, all tasks in a task-graph will have their",
-    "task-specific routing key prefixed with `schedulerId`, `taskGraphId` and",
-    "`taskGraphRoutingKey`. This leaves tasks with a routing key on the",
-    "following format",
-    "`<schedulerId>.<taskGraphId>.<taskGraphRoutingKey>.<taskRoutingKey>`.",
+    "task-specific routing key prefixed with `schedulerId` and `taskGraphId`.",
+    "This leaves tasks with a routing key on the following format",
+    "`<schedulerId>.<taskGraphId>.<taskRoutingKey>`.",
     "",
     "In production the `schedulerId` is typically `\"task-graph-scheduler\"`,",
     "but this is configurable, which is useful for testing and configuration",
@@ -101,8 +100,7 @@ api.declare({
     "",
     "Remark, prefixing all task-specific routing keys in this manner does",
     "reduce the maximum size of the task-specific routing key. So keep this",
-    "in mind when constructing the task-graph routing key and task-specific",
-    "routing keys.",
+    "in mind when constructing the task-specific routing keys.",
     "",
     "**Task-graph scopes**, a task-graph is assigned a set of scopes, just",
     "like tasks. Tasks within a task-graph cannot have scopes beyond those",
@@ -130,10 +128,11 @@ api.declare({
   // to use
   var queue = new taskcluster.Queue({
     baseUrl:        ctx.queueBaseUrl,
-    credentials:  _.defaults({
+    credentials:    ctx.credentials,
+    authorization: {
       delegating:   true,
       scopes:       input.scopes
-    }, ctx.credentials);
+    }
   });
 
   // Prepare tasks
@@ -142,7 +141,6 @@ api.declare({
     schedulerId:      ctx.schedulerId,
     existingTasks:    [],
     queue:            queue,
-    routing:          undefined,
     schema:           SCHEMA_PREFIX_CONST + 'task-graph.json#',
     validator:        ctx.validator
   }).then(function(result) {
@@ -213,13 +211,14 @@ api.declare({
   description: [
     "Add a set of tasks to an existing task-graph. The request format is very",
     "similar to the request format for creating task-graphs. But `routing`",
-    "prefix, `metadata` and `tags` cannot be modified and tasks added to the",
-    "task-graph will be prefixed with the same routing key as the existing",
-    "tasks. See `createTaskGraph` for details in routing key prefixing.",
+    "key, `scopes`, `metadata` and `tags` cannot be modified and tasks added",
+    "to the task-graph will be prefixed with the same routing key as the",
+    "existing tasks. See `createTaskGraph` for details in routing key",
+    "prefixing.",
     "",
     "**Referencing required tasks**, just as when task-graphs are created,",
     "each task has a list of required tasks. It is possible to reference",
-    "all `taskId`s within the task-graph."
+    "all `taskId`s within the task-graph.",
     "",
     "**Safety,** it is only _safe_ to call this API end-point while the",
     "task-graph being modified is still running. If the task-graph is",
@@ -257,10 +256,11 @@ api.declare({
     // to use
     queue = new taskcluster.Queue({
       baseUrl:        ctx.queueBaseUrl,
-      credentials:  _.defaults({
+      credentials:    ctx.credentials,
+      authorization: {
         delegating:   true,
         scopes:       taskGraph.scopes
-      }, ctx.credentials);
+      }
     });
   });
 
@@ -271,7 +271,6 @@ api.declare({
       schedulerId:      ctx.schedulerId,
       existingTasks:    existingTasks,
       queue:            queue,
-      routing:          taskGraph.routing,
       schema:           SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
       validator:        ctx.validator
     }).then(function(result) {

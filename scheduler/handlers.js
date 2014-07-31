@@ -208,7 +208,7 @@ Handlers.prototype.rerunTaskOrBlock = function(task, message) {
 Handlers.prototype.failed = function(message) {
   var that = this;
   // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.payload.status.routing.split('.')[1];
+  var taskGraphId     = message.routing.routing.split('.')[1];
   var blockingTaskId  = message.payload.status.taskId;
   debug("Got message that taskId: %s failed", blockingTaskId);
 
@@ -239,7 +239,7 @@ Handlers.prototype.failed = function(message) {
 Handlers.prototype.completed = function(message) {
   var that = this;
   // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.payload.status.routing.split('.')[1];
+  var taskGraphId     = message.routing.routing.split('.')[1];
   var completedTaskId = message.payload.status.taskId;
   debug("Got message that taskId: %s completed", completedTaskId);
 

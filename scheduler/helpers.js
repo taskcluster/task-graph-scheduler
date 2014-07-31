@@ -24,7 +24,6 @@ var taskcluster = require('taskcluster-client');
  *   existingTasks:      // Existing tasks in the task-graph
  *   queue:              // Instance of taskcluster.Queue delegating scopes
  *                       // this task-graph is authorized to use
- *   routing:            // task-graph routing key (if not taken from input)
  *   schema:             // Schema for validation routing-key prefixed input
  *   validator:          // base.validator instance
  * }
@@ -57,8 +56,7 @@ exports.prepareTasks = function(input, options) {
   // Routing prefix for task.routing
   var routingPrefix = [
     options.schedulerId,
-    options.taskGraphId,
-    options.routing || input.routing
+    options.taskGraphId
   ].join('.') + '.';
 
   // Prefix task routing keys
@@ -146,7 +144,10 @@ exports.prepareTasks = function(input, options) {
   // Upload all tasks and return result from prepareTasks
   var queueErrors = [];
   return Promise.all(input.tasks.map(function(taskNode) {
-    return options.queue.defineTask(taskId, taskNode.task).catch(function(err) {
+    return options.queue.defineTask(
+      taskNode.taskId,
+      taskNode.task
+    ).catch(function(err) {
       // If we failed to upload the queue, let's report the error from the queue
       errors.push({
         message:  err.message,

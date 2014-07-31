@@ -1,4 +1,4 @@
-suite('scheduler (extend)', function() {
+suite('scheduler (inspect)', function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('scheduler:test:scheduler_test');
@@ -6,7 +6,7 @@ suite('scheduler (extend)', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var helper      = require('./helper');
-  var subject     = helper.setup({title: "extend task-graph"});
+  var subject     = helper.setup({title: "inspect task-graph"});
 
   // Create datetime for created and deadline as 25 minutes later
   var created = new Date();
@@ -96,14 +96,31 @@ suite('scheduler (extend)', function() {
     }
   };
 
-  test("Schedule a task-graph and extend task-graph", function() {
+  test("Schedule a task-graph, run task and inspect", function() {
     this.timeout(120 * 1000);
 
     // Make task graph
     var taskGraph = makeTaskGraph();
 
-    // Remove taskB for submission as extension
-    var taskB = taskGraph.tasks.pop();
+    // Listen for taskGraph to become running
+    var binding = subject.schedulerEvents.taskGraphRunning({
+      taskGraphId:    taskGraphId
+    });
+    var taskGraphRunning = subject.listenFor(binding);
+
+    // Listen for taskA to become pending
+    var taskAPending = subject.listenFor(subject.queueEvents.taskPending({
+      taskId:   taskIdA
+    }));
+
+    // Listen for taskB to become pending
+    var taskBCanBeScheduled = false;
+    var taskBPending = subject.listenFor(subject.queueEvents.taskPending({
+      taskId:   taskIdB
+    })).then(function(message) {
+      // Check that we're not scheduling taskB too soon
+      assert(taskBCanBeScheduled, "taskB was scheduled too soon!!!");
+    });
 
     // Submit taskgraph to scheduler
     var taskGraphId = slugid.v4();
@@ -111,18 +128,42 @@ suite('scheduler (extend)', function() {
     return subject.scheduler.createTaskGraph(
       taskGraphId,
       taskGraph
-    ).then(function() {
-      return subject.scheduler.inspectTaskGraph(taskGraphId);
+    ).then(function(result) {
+      assert(result.status.taskGraphId === taskGraphId,
+             "Didn't get taskGraphId");
+
+      debug("### Waiting task-graph running and taskA pending");
+      // Wait for messages that we are expecting
+      return Promise.all(taskGraphRunning, taskAPending);
+    }).then(function() {
+      // Claim taskA
+      debug("### Claim task A");
+      return subject.queue.claimTask(taskIdA, 0, {
+        workerGroup:  'dummy-test-workergroup',
+        workerId:     'dummy-test-worker-id'
+      });
+    }).then(function() {
+      return helper.sleep(500);
+    }).then(function() {
+      taskBCanBeScheduled = true;
+      debug("### Report task A completed");
+      return subject.queue.reportCompleted(taskIdA, 0, {
+        success: true
+      });
+    }).then(function() {
+      debug("### Waiting for taskB to become pending");
+      return taskBPending;
+    }).then(function() {
+      return subject.scheduler.getTaskGraphStatus(taskGraphId);
+    }).then(function(result) {
+      assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
+      assert(result.status.state == 'running',          "got right state");
+    }).then(function() {
+      return subject.scheduler.getTaskGraphInfo(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
       assert(result.status.state == 'running',          "got right state");
-      assert(result.tasks.length == 1,                  "got task");
-
-      // Extend the task-graph
-      return subject.scheduler.extendTaskGraph(taskGraphId, {
-        tasks: [taskB]
-      });
     }).then(function() {
       return subject.scheduler.inspectTaskGraph(taskGraphId);
     }).then(function(result) {

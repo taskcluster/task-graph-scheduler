@@ -10,17 +10,16 @@ suite('data', function() {
   // Load test configuration
   var cfg = base.config({
     defaults:     require('../config/defaults'),
-    profile:      require('../config/testing'),
+    profile:      require('../config/test'),
     envs: [
-      'azureTable_accountUrl',
-      'azureTable_accountName',
-      'azureTable_accountKey'
+      'azure_accountName',
+      'azure_accountKey'
     ],
     filename:               'task-graph-scheduler'
   });
 
   // Check that we have configuration or abort
-  if (!cfg.get('scheduler:taskGraphTableName') || !cfg.get('azureTable')) {
+  if (!cfg.get('scheduler:taskGraphTableName') || !cfg.get('azure')) {
     console.log("\nWARNING:");
     console.log("Skipping 'enity' tests, missing config file: " +
                 "task-graph-scheduler.conf.json");
@@ -31,12 +30,12 @@ suite('data', function() {
   var Task = data.Task.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
   var TaskGraph = data.TaskGraph.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
 
   // Test that Task.loadGraphTasks works, every thing else is testing base
@@ -50,11 +49,12 @@ suite('data', function() {
       // Create taskGraph
       var tgCreated = TaskGraph.create({
         taskGraphId:        taskGraphId,
-        version:            '0.2.0',
+        version:            1,
         requires:           [],
         requiresLeft:       [],
         state:              'finished',
         routing:            '',
+        scopes:             [],
         details: {
           metadata:         {},
           tags:             {},
@@ -66,8 +66,7 @@ suite('data', function() {
       var taCreated = Task.create({
         taskGraphId:      taskGraphId,
         taskId:           slugid.v4(),
-        version:          '0.2.0',
-        label:            'taskA',
+        version:          1,
         rerunsAllowed:    1,
         rerunsLeft:       1,
         deadline:         new Date(),
@@ -81,8 +80,7 @@ suite('data', function() {
       var tbCreated = Task.create({
         taskGraphId:      taskGraphId,
         taskId:           slugid.v4(),
-        version:          '0.2.0',
-        label:            'taskB',
+        version:          1,
         rerunsAllowed:    1,
         rerunsLeft:       1,
         deadline:         new Date(),
@@ -102,11 +100,6 @@ suite('data', function() {
         return Task.loadGraphTasks(taskGraphId);
       }).then(function(tasks) {
         assert(tasks.length === 2, "Expected two tasks in the task-graph");
-        assert(tasks[0].label !== tasks[1].label, "Matching labels, how?");
-        assert(tasks[0].label === 'taskA' || tasks[0].label === 'taskB',
-               "Expected taskA or taskB");
-        assert(tasks[1].label === 'taskA' || tasks[1].label === 'taskB',
-               "Expected taskA or taskB");
       }).catch(function(err) {
         debug("Error: %s, %j", err, err);
         throw err;

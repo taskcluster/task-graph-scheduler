@@ -17,7 +17,7 @@ var exchanges = new base.Exchanges({
     " * End-users, who wants notification of completed task-graphs",
     "",
     "**Remark**, the task-graph scheduler will prefix the task specific",
-    "routing key with `<schedulerId>.<taskGraphId>.<taskRoutingKey>.`,",
+    "routing key with `<schedulerId>.<taskGraphId>.`,",
     "this makes it easy to use AMQP exchanges from the queue to monitor",
     "beginning and end of individual tasks within a given task-graph.",
     "",

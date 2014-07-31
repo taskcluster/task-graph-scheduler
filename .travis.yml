@@ -1,0 +1,26 @@
+env:
+  global:
+  - DEBUG: >-
+      *
+      -mocha:*
+      -superagent
+      -express:router
+      -express:router:*
+      -base:validator
+      -base:entity'
+  - secure: eglS+APwgzfCRu35ZgP+1U2v7esRrpook3X1329TzuDLdkf5+azM3AD4FjV82sJZT1oqaOzkpUN4Dsg15bk05H+mNPpvWdItoWurlZkK4ltTpvxCHahTU35q1fD0MzeKHlyZnXYefR7JV18pt1RlXM47BYVmnoO0cckK3aG4AWM=
+  - secure: cO9+29DqglNe21fSnkix1bxDqoIJe/M75J95kErW8UwaXu8zDqVXGDib9PTjgHXna0pfjYzdwumTGmpAywV2PUGp139kqJ5iZMBr+1xbEyzd2zZo0KW9Z5OxWKh0iwL3a4GmeTTWzSyrrHRbHKiQT9SYQtCd7KgmZkwOAAEWjy4=
+  - secure: XQb+TMDEHkXraq1P/TMqOvSa4BxV3WvH1dfD7JxwwXEa/Ie/buCgWcqodTUsECywbTnamG8xfvpOcdtDyXyCvahnO8BIaWwvlzH/9vyer2f9ju3gR6wYjjHePnHnnp/hvuJNBbThW0Zjgc2kC3sDI8LHFfFtFtTg14eYDz9NY88=
+  - secure: ZKRZzfl2YZIESI1oZydD9VXMduwTrEQwF9Ylz/Z9jva5XtzidUGvr9tLVFioAApSupAAGAoIqRvyMV0gbsY7/CQHvdO1tK3Ut2wkrIbsJIYtdWu0KJ0iN4wUEg/a2gw5DXn4/OhRMkNzlxHBDC/1FfqA0FTbjvWXN4Hrn1mXo0M=
+  - secure: QmL4WA2AHb5R4whTQ+H9zgZFz6ds+e5+snEWzOjY9cuYpuSliTOlFM2cpvTDH9b+J7Blp3MEVEpXJyzuOMJF4wYz9h96tdeHrY1i2O7QOIhtAyeqeoM5UXENKztdfQeNZU2cCzXP1WUEGuxGtEyCnYepN9ezXhllhxVn0CliV3A=
+language: node_js
+node_js:
+- '0.10'
+script: npm test
+deploy:
+  provider: heroku
+  api_key:
+    secure: E4BYsUC1Vvz/Asgy9yiVqFUqIvcITbET/+A0dDTr+2XaTjwRZVLnCkRfixF96u5Tz4tfqyS5w4hRKMfNx36idNxszmaev3HWl1hQW5UtuL7BzXQTDEruLq1TcgqglOMehlAHIAGBtpEj+ctnJ4vuHb/gQZLsWHpLy2CBOsQMELk=
+  app: scheduler-taskcluster-net
+  on:
+    repo: taskcluster/task-graph-scheduler

@@ -20,6 +20,10 @@ suite('validate', function() {
         success:  true,
       }, {
         schema:   'scheduler/v1/task-graph.json#',
+        path:     'another-task-graph-example.json',
+        success:  true,
+      }, {
+        schema:   'scheduler/v1/task-graph.json#',
         path:     'invalid-task-graph-example.json',
         success:  false,
       }
