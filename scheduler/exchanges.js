@@ -17,7 +17,7 @@ var exchanges = new base.Exchanges({
     " * End-users, who wants notification of completed task-graphs",
     "",
     "**Remark**, the task-graph scheduler will prefix the task specific",
-    "routing key with `<schedulerId>.<taskGraphId>.<taskRoutingKey>.`,",
+    "routing key with `<schedulerId>.<taskGraphId>.`,",
     "this makes it easy to use AMQP exchanges from the queue to monitor",
     "beginning and end of individual tasks within a given task-graph.",
     "",
@@ -95,16 +95,16 @@ var commonRoutingKey = [
 
 /** Build an AMQP compatible message from a message */
 var commonMessageBuilder = function(message) {
-  message.version = '0.2.0';
+  message.version = 1;
   return message;
 };
 
 /** Build a routing-key from message */
-var commonRoutingKeyBuilder = function(message) {
+var commonRoutingKeyBuilder = function(message, routing) {
   return {
     schedulerId:      message.status.schedulerId,
     taskGraphId:      message.status.taskGraphId,
-    routing:          message.status.routing
+    routing:          routing
   };
 };
 

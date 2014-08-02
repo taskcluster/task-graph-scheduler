@@ -20,7 +20,7 @@ module.exports = {
   // Message version numbers
   "message-version": {
     "description":  "Message version",
-    "enum":         ["0.2.0"]
+    "enum":         [1]
   },
 
   // Slugid pattern, for when-ever that is useful
@@ -37,35 +37,54 @@ module.exports = {
   // keys along with taskGraphId and schedulerId
   "routing": {
     "title":        "Routing Key",
-    "description":  "Task-graph specific routing key, may contain dots (`.`) for arbitrary sub-routes",
+    "description":  "Task-graph specific routing key, may contain dots "+
+                    " (`.`) for arbitrary sub-keys",
     "type":         "string",
     "maxLength":    64
   },
 
-  // List of task nodes
+  // Task-Graph scopes
+  "scopes": {
+    "title":        "Scopes",
+    "description":  "List of scopes (or scope-patterns) that tasks of the "+
+                    "task-graph is authorized to use.",
+    "type":         "array",
+    "items": {
+      "title":        "Scope",
+      "description":  "A scope (or scope-patterns) which a task of the " +
+                      "task-graph is authorized to use. " +
+                      "This can be a string or a string ending with `*` " +
+                      "which will authorize all scopes for which the string " +
+                      "is a prefix.",
+      "type":         "string"
+    }
+  },
+
+  // Task-Graph nodes
   "task-nodes": {
     "title":                  "Tasks",
-    "description":            "List of nodes in the task-graph, eaching featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.",
+    "description":            "List of nodes in the task-graph, each featuring a task definition and scheduling preferences, such as number of _reruns_ to attempt.",
     "type":                   "array",
     "items": {
       "title":                "Task Node",
       "description":          "Representation of a tasks in the task-graph",
       "type":                 "object",
       "properties": {
-        "label": {
-          "title":            "Task Label",
-          "description":      "Task label used to reference the task in lists of required tasks for other task nodes and to substitute in `taskId` using the pattern `{{taskId:<task-label>}}`",
-          "type":             "string"
+        "taskId": {
+          "title":            "Task Identifier",
+          "description":      "Task identifier (`taskId`) for the task when submitted to the queue, also used in `requires` below. This must be formatted as a **slugid** that is a uuid encoded in url-safe base64 following [RFC 4648 sec. 5](http://tools.ietf.org/html/rfc4648#section-5)), but without `==` padding.",
+          "type":             "string",
+          "pattern":          {"$const": "slugid-pattern"}
         },
         "requires": {
           "title":            "Required tasks",
-          "description":      "List of required task labels",
+          "description":      "List of required `taskId`s",
           "type":             "array",
           "items": {
-            "title":          "Required task-label",
-            "description":    "Label for task that is required to be _successfully completed_ before this task is scheduled.",
+            "title":          "Required `taskId`",
+            "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
             "type":           "string",
-            "maxLength":      255
+            "pattern":        {"$const": "slugid-pattern"}
           }
         },
         "reruns": {
@@ -77,7 +96,7 @@ module.exports = {
         },
         "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
       },
-      "required":             ["label", "requires", "reruns", "task"]
+      "required":             ["taskId", "requires", "reruns", "task"]
     }
   }
 };

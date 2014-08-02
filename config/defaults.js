@@ -23,10 +23,19 @@ module.exports = {
   // Server configuration
   server: {
     // Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'http://scheduler.taskcluster.net',
+    publicUrl:                      'https://scheduler.taskcluster.net',
 
     // Port to listen for requests on
-    port:                           undefined
+    port:                           undefined,
+
+    // Environment 'development' or 'production'
+    env:                            'development',
+
+    // Force SSL, not useful when runnning locally
+    forceSSL:                       false,
+
+    // Trust a forwarding proxy
+    trustProxy:                     false
   },
 
   // Configuration of access to other taskcluster components
@@ -55,9 +64,8 @@ module.exports = {
     url:                            undefined
   },
 
-  // Azure table credentials (usually configured using environment variables)
-  azureTable: {
-    accountUrl:                     null,
+  // Azure credentials (usually configured using environment variables)
+  azure: {
     accountName:                    null,
     accountKey:                     null
   },

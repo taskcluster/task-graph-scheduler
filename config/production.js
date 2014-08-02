@@ -10,8 +10,12 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                      'http://scheduler.taskcluster.net',
-
-    port:                           80
+    publicUrl:                      'https://scheduler.taskcluster.net',
+    port:                           80,
+    env:                            'production',
+    forceSSL:                       true,
+    // We trust the proxy on heroku, as the SSL end-point provided by heroku
+    // is a proxy, so we have to trust it.
+    trustProxy:                     true
   }
 };

@@ -1,229 +1,186 @@
 suite('scheduler (task-graph)', function() {
-  var base        = require('taskcluster-base');
-  var taskcluster = require('taskcluster-client');
-  var request     = require('superagent-promise');
-  var path        = require('path');
   var Promise     = require('promise');
   var assert      = require('assert');
-  var exchanges   = require('../scheduler/exchanges');
   var debug       = require('debug')('scheduler:test:scheduler_test');
+  var helper      = require('./helper');
+  var slugid      = require('slugid');
+  var _           = require('lodash');
+  var helper      = require('./helper');
+  var subject     = helper.setup({title: "schedule task-graph"});
 
-  // Configure server
-  var server = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', 'bin', 'server.js'),
-    args:         ['testing'],
-    name:         'server.js',
-    baseUrlPath:  '/v1'
-  });
+  // Create datetime for created and deadline as 25 minutes later
+  var created = new Date();
+  var deadline = new Date();
+  deadline.setMinutes(deadline.getMinutes() + 25);
 
-  // Configure handlers
-  var handlers = new base.testing.LocalApp({
-    command:      path.join(__dirname, '..', 'bin', 'handlers.js'),
-    args:         ['testing'],
-    name:         'handlers.js',
-    baseUrlPath:  '/v1'
-  });
-
-  // Setup server
-  var baseUrl = null;
-  setup(function() {
-    return Promise.all(
-      handlers.launch(),
-      server.launch().then(function(baseUrl_) {
-        baseUrl = baseUrl_;
-      })
-    );
-  });
-
-  // Shutdown server
-  teardown(function() {
-    return Promise.all(server.terminate(), handlers.terminate());
-  });
-
-  // Load test configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/testing'),
-    envs: [
-      'amqp_url'
-    ],
-    filename:               'task-graph-scheduler'
-  });
+  // Hold reference to taskIds
+  var taskIdA = null;
+  var taskIdB = null;
 
   // Task graph that'll post in this test
-  var taskGraphExample = {
-    "version":                "0.2.0",
-    "params":                 {
-      "test-worker-type":     "test-worker"
-    },
-    "routing":                "",
-    "tasks": [
-      {
-        "label":              "print-once",
-        "requires":           [],
-        "reruns":             0,
-        "task": {
-          "version":          "0.2.0",
-          "provisionerId":    "aws-provisioner",
-          "workerType":       "{{test-worker-type}}",
-          "routing":          "",
-          "timeout":          600,
-          "retries":          3,
-          "priority":         5,
-          "created":          "2014-03-01T22:19:32.124Z",
-          "deadline":         "2060-03-01T22:19:32.124Z",
-          "payload": {
-            "image":          "ubuntu:latest",
-            "command": [
-              "/bin/bash", "-c",
-              "echo 'Hello World'"
-            ],
-            "features": {
-              "azureLivelog": true
+  var makeTaskGraph = function() {
+    // Find task ids for A and B
+    taskIdA = slugid.v4();
+    taskIdB = slugid.v4();
+    return {
+      "scopes": [
+        "queue:post:define-task:dummy-test-provisioner/dummy-test-worker-type"
+      ],
+      "routing":                "",
+      "tasks": [
+        {
+          "taskId":             taskIdA,
+          "requires":           [],
+          "reruns":             0,
+          "task": {
+            "provisionerId":    "dummy-test-provisioner",
+            "workerType":       "dummy-test-worker-type",
+            "scopes":           [],
+            "routing":          "",
+            "retries":          3,
+            "priority":         5,
+            "created":          created.toJSON(),
+            "deadline":         deadline.toJSON(),
+            "payload": {
+              "desiredResolution":  "success"
             },
-            "maxRunTime":     600
-          },
-          "metadata": {
-            "name":           "Print `'Hello World'` Once",
-            "description":    "This task will prìnt `'Hello World'` **once**!",
-            "owner":          "jojensen@mozilla.com",
-            "source":         "https://github.com/taskcluster/task-graph-scheduler"
-          },
-          "tags": {
-            "objective":      "Test task-graph scheduler"
+            "metadata": {
+              "name":           "Print `'Hello World'` Once",
+              "description":    "This task will prìnt `'Hello World'` **once**!",
+              "owner":          "jojensen@mozilla.com",
+              "source":         "https://github.com/taskcluster/task-graph-scheduler"
+            },
+            "tags": {
+              "objective":      "Test task-graph scheduler"
+            }
+          }
+        },
+        {
+          "taskId":             taskIdB,
+          "requires":           [taskIdA],
+          "reruns":             0,
+          "task": {
+            "provisionerId":    "dummy-test-provisioner",
+            "workerType":       "dummy-test-worker-type",
+            "scopes":           [],
+            "routing":          "",
+            "retries":          3,
+            "priority":         5,
+            "created":          created.toJSON(),
+            "deadline":         deadline.toJSON(),
+            "payload": {
+              "desiredResolution":  "success"
+            },
+            "metadata": {
+              "name":           "Print `'Hello World'` Again",
+              "description":    "This task will prìnt `'Hello World'` **again**! " +
+                                "and wait for " + taskIdA + ".",
+              "owner":          "jojensen@mozilla.com",
+              "source":         "https://github.com/taskcluster/task-graph-scheduler"
+            },
+            "tags": {
+              "objective":      "Test task-graph scheduler"
+            }
           }
         }
+      ],
+      "metadata": {
+        "name":         "Validation Test TaskGraph",
+        "description":  "Task-graph description in markdown",
+        "owner":        "root@localhost.local",
+        "source":       "http://github.com/taskcluster/task-graph-scheduler"
       },
-      {
-        "label":              "print-twice",
-        "requires":           ["print-once"],
-        "reruns":             0,
-        "task": {
-          "version":          "0.2.0",
-          "provisionerId":    "aws-provisioner",
-          "workerType":       "{{test-worker-type}}",
-          "routing":          "",
-          "timeout":          600,
-          "retries":          3,
-          "priority":         5,
-          "created":          "2014-03-01T22:19:32.124Z",
-          "deadline":         "2060-03-01T22:19:32.124Z",
-          "payload": {
-            "image":          "ubuntu:latest",
-            "command": [
-              "/bin/bash", "-c",
-              "echo 'Hello World (Again)'"
-            ],
-            "features": {
-              "azureLivelog": true
-            },
-            "maxRunTime":     600
-          },
-          "metadata": {
-            "name":           "Print `'Hello World'` Again",
-            "description":    "This task will prìnt `'Hello World'` **again**! " +
-                              "and wait for {{taskId:print-once}}.",
-            "owner":          "jojensen@mozilla.com",
-            "source":         "https://github.com/taskcluster/task-graph-scheduler"
-          },
-          "tags": {
-            "objective":      "Test task-graph scheduler"
-          }
-        }
+      "tags": {
+        "MyTestTag": "Hello World"
       }
-    ],
-    "metadata": {
-      "name":         "Validation Test TaskGraph",
-      "description":  "Task-graph description in markdown",
-      "owner":        "root@localhost.local",
-      "source":       "http://github.com/taskcluster/task-graph-scheduler"
-    },
-    "tags": {
-      "MyTestTag": "Hello World"
     }
   };
 
+  test("Schedule a task-graph and run to completion", function() {
+    this.timeout(120 * 1000);
 
-  test('create, status, info and inspect', function() {
-    this.timeout('8m');
+    // Make task graph
+    var taskGraph = makeTaskGraph();
 
-    // Create listener
-    var listener = new taskcluster.Listener({
-      connectionString:   cfg.get('amqp:url')
+    // Listen for taskGraph to become running
+    var binding = subject.schedulerEvents.taskGraphRunning({
+      taskGraphId:    taskGraphId
+    });
+    var taskGraphRunning = subject.listenFor(binding);
+
+    // Listen for taskA to become pending
+    var taskAPending = subject.listenFor(subject.queueEvents.taskPending({
+      taskId:   taskIdA
+    }));
+
+    // Listen for taskB to become pending
+    var taskBCanBeScheduled = false;
+    var taskBPending = subject.listenFor(subject.queueEvents.taskPending({
+      taskId:   taskIdB
+    })).then(function(message) {
+      // Check that we're not scheduling taskB too soon
+      assert(taskBCanBeScheduled, "taskB was scheduled too soon!!!");
     });
 
-    // Create SchedulerEvents class from reference
-    var SchedulerEvents = taskcluster.createClient(exchanges.reference({
-      exchangePrefix:        cfg.get('scheduler:exchangePrefix')
-    }));
-    var schedulerEvents = new SchedulerEvents();
+    // Listen for taskGraph to be finished
+    var taskGraphCanFinishNow = false;
+    var binding = subject.schedulerEvents.taskGraphFinished({
+      taskGraphId:    taskGraphId
+    });
+    var taskGraphFinished = subject.listenFor(binding).then(function() {
+      // Check that we're not completed too soon
+      assert(taskGraphCanFinishNow, "taskGraph finished too soon!!!");
+    });
 
-    // Bind to exchange
-    listener.bind(schedulerEvents.taskGraphFinished({
-      schedulerId:      cfg.get('scheduler:schedulerId')
-    }));
+    // Submit taskgraph to scheduler
+    var taskGraphId = slugid.v4();
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(result.status.taskGraphId === taskGraphId,
+             "Didn't get taskGraphId");
 
-    var taskGraphId = null;
-    var done = new Promise(function(accept, reject) {
-      listener.on('message', function(message) {
-        if(message.payload.status.taskGraphId === taskGraphId) {
-          setTimeout(function() {
-            listener.close().then(accept());
-          }, 250);
-          return listener.pause();
-        }
+      debug("### Waiting task-graph running and taskA pending");
+      // Wait for messages that we are expecting
+      return Promise.all(taskGraphRunning, taskAPending);
+    }).then(function() {
+      // Claim taskA
+      debug("### Claim task A");
+      return subject.queue.claimTask(taskIdA, 0, {
+        workerGroup:  'dummy-test-workergroup',
+        workerId:     'dummy-test-worker-id'
       });
-    });
-
-    return listener.connect().then(function() {
-      return request
-        .post(baseUrl + '/task-graph/create')
-        .send(taskGraphExample)
-        .end()
-        .then(function(res) {
-          if (!res.ok) {
-            debug(JSON.stringify(res.body, null, 2));
-          }
-          assert(res.ok, "Failed to submit task-graph");
-          taskGraphId = res.body.status.taskGraphId;
-        });
     }).then(function() {
-      return request
-        .get(baseUrl + '/task-graph/' + taskGraphId + '/status')
-        .end()
-        .then(function(res) {
-          assert(res.ok, "Fetched info without error");
-          assert(res.body.status.taskGraphId == taskGraphId,
-                 "got right taskGraphId");
-          assert(res.body.status.state == 'running', "got right state");
-        });
+      return helper.sleep(500);
     }).then(function() {
-      return request
-        .get(baseUrl + '/task-graph/' + taskGraphId + '/info')
-        .end()
-        .then(function(res) {
-          assert(res.ok, "Fetched info without error");
-          assert(res.body.status.taskGraphId == taskGraphId,
-                 "got right taskGraphId");
-          assert(res.body.tags.MyTestTag == "Hello World", "Got tag");
-          assert(res.body.status.state == 'running', "got right state");
-        });
+      taskBCanBeScheduled = true;
+      debug("### Report task A completed");
+      return subject.queue.reportCompleted(taskIdA, 0, {
+        success: true
+      });
     }).then(function() {
-      return request
-        .get(baseUrl + '/task-graph/' + taskGraphId + '/inspect')
-        .end()
-        .then(function(res) {
-          assert(res.ok, "Fetched info without error");
-          assert(res.body.params, "Check params isn't missing");
-          assert(res.body.status.taskGraphId == taskGraphId,
-                 "got right taskGraphId");
-          assert(res.body.tags.MyTestTag == "Hello World", "Got tag");
-          assert(res.body.status.state == 'running', "got right state");
-          assert(res.body.tasks['print-twice'].requires.length == 1,
-                 "got requires right");
-        });
+      debug("### Waiting for taskB to become pending");
+      return taskBPending;
     }).then(function() {
-      return done;
+      // Claim taskA
+      debug("### Claim task B");
+      return subject.queue.claimTask(taskIdB, 0, {
+        workerGroup:  'dummy-test-workergroup',
+        workerId:     'dummy-test-worker-id'
+      });
+    }).then(function() {
+      return helper.sleep(500);
+    }).then(function() {
+      taskGraphCanFinishNow = true;
+      debug("### Report task B completed");
+      return subject.queue.reportCompleted(taskIdB, 0, {
+        success: true
+      });
+    }).then(function() {
+      debug("### Waiting for task-graph to be finished");
+      return taskGraphFinished;
     });
   });
 });

@@ -19,7 +19,7 @@ var TaskGraph = base.Entity.configure({
       hidden:           true
     }, {
       key:              'version',
-      type:             'string'
+      type:             'number'
     }, {
       key:              'requires',
       type:             'json'
@@ -32,6 +32,9 @@ var TaskGraph = base.Entity.configure({
     }, {
       key:              'routing',
       type:             'string'
+    }, {
+      key:              'scopes',
+      type:             'json'
     }, {
       key:              'details',
       type:             'json'
@@ -58,8 +61,7 @@ TaskGraph.prototype.status = function() {
   return {
     taskGraphId:    this.taskGraphId,
     schedulerId:    this.schedulerId,
-    state:          this.state,
-    routing:        this.routing
+    state:          this.state
   };
 };
 
@@ -98,10 +100,7 @@ var Task = base.Entity.configure({
       type:             'string'
     }, {
       key:              'version',
-      type:             'string'
-    }, {
-      key:              'label',
-      type:             'string'
+      type:             'number'
     }, {
       key:              'rerunsAllowed',
       type:             'number'

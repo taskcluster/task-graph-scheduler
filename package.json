@@ -14,15 +14,15 @@
     "promise":                          "4.0.0",
     "lodash":                           "2.4.1",
     "debug":                            "0.7.4",
-    "superagent":                       "~0.16.0",
-    "superagent-promise":               "0.1.0",
-    "slugid":                           "1.0.1",
-    "taskcluster-client":               "0.6.0",
-    "taskcluster-base":                 "0.1.1",
+    "superagent":                       "0.18.2",
+    "superagent-promise":               "0.1.2",
+    "taskcluster-client":               "0.11.0",
+    "taskcluster-base":                 "0.3.3",
     "azure-table-node":                 "1.4.1"
   },
   "devDependencies": {
-    "mocha":                            "1.18.2"
+    "mocha":                            "1.18.2",
+    "slugid":                           "1.0.1"
   },
   "engines": {
     "node":                             "0.10.x"

@@ -1,0 +1,71 @@
+{
+    "scopes": [
+      "queue:post:define-task:dummy-test-provisioner/dummy-test-worker-type"
+    ],
+    "routing":                "",
+    "tasks": [
+      {
+        "taskId":             "XgvL0qtSR92cIWpcwdGKCA",
+        "requires":           [],
+        "reruns":             0,
+        "task": {
+          "provisionerId":    "dummy-test-provisioner",
+          "workerType":       "dummy-test-worker-type",
+          "scopes":           [],
+          "routing":          "",
+          "retries":          3,
+          "priority":         5,
+          "created":          "2014-03-01T22:19:32.124Z",
+          "deadline":         "2060-03-01T22:19:32.124Z",
+          "payload": {
+            "desiredResolution":  "success"
+          },
+          "metadata": {
+            "name":           "Print `'Hello World'` Once",
+            "description":    "This task will prìnt `'Hello World'` **once**!",
+            "owner":          "jojensen@mozilla.com",
+            "source":         "https://github.com/taskcluster/task-graph-scheduler"
+          },
+          "tags": {
+            "objective":      "Test task-graph scheduler"
+          }
+        }
+      },
+      {
+        "taskId":             "73GsfK62QNKAk2Hg1EEZTQ",
+        "requires":           ["XgvL0qtSR92cIWpcwdGKCA"],
+        "reruns":             0,
+        "task": {
+          "provisionerId":    "dummy-test-provisioner",
+          "workerType":       "dummy-test-worker-type",
+          "scopes":           [],
+          "routing":          "",
+          "retries":          3,
+          "priority":         5,
+          "created":          "2014-03-01T22:19:32.124Z",
+          "deadline":         "2060-03-01T22:19:32.124Z",
+          "payload": {
+            "desiredResolution":  "success"
+          },
+          "metadata": {
+            "name":           "Print `'Hello World'` Again",
+            "description":    "This task will prìnt `'Hello World'` **again**! ",
+            "owner":          "jojensen@mozilla.com",
+            "source":         "https://github.com/taskcluster/task-graph-scheduler"
+          },
+          "tags": {
+            "objective":      "Test task-graph scheduler"
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "name":         "Validation Test TaskGraph",
+      "description":  "Task-graph description in markdown",
+      "owner":        "root@localhost.local",
+      "source":       "http://github.com/taskcluster/task-graph-scheduler"
+    },
+    "tags": {
+      "MyTestTag": "Hello World"
+    }
+  }

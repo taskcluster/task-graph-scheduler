@@ -23,9 +23,8 @@ var launch = function(profile) {
       'amqp_url',
       'aws_accessKeyId',
       'aws_secretAccessKey',
-      'azureTable_accountUrl',
-      'azureTable_accountName',
-      'azureTable_accountKey'
+      'azure_accountName',
+      'azure_accountKey'
     ],
     filename:     'task-graph-scheduler'
   });
@@ -34,12 +33,12 @@ var launch = function(profile) {
   var Task = data.Task.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
   var TaskGraph = data.TaskGraph.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
     tableName:        cfg.get('scheduler:taskGraphTableName'),
-    credentials:      cfg.get('azureTable')
+    credentials:      cfg.get('azure')
   });
 
   // Setup AMQP exchanges and create a publisher
@@ -88,6 +87,8 @@ var launch = function(profile) {
         TaskGraph:      TaskGraph,
         publisher:      publisher,
         queue:          queue,
+        credentials:    cfg.get('taskcluster:credentials'),
+        queueBaseUrl:   cfg.get('taskcluster:queueBaseUrl'),
         schedulerId:    cfg.get('scheduler:schedulerId'),
         validator:      validator
       },
@@ -102,7 +103,10 @@ var launch = function(profile) {
   }).then(function(router) {
     // Create app
     var app = base.app({
-      port:           Number(process.env.PORT || cfg.get('server:port'))
+      port:           Number(process.env.PORT || cfg.get('server:port')),
+      env:            cfg.get('server:env'),
+      forceSSL:       cfg.get('server:forceSSL'),
+      trustProxy:     cfg.get('server:trustProxy')
     });
 
     // Mount API router

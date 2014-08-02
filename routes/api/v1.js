@@ -1,5 +1,3 @@
-var slugid      = require('slugid');
-var jsonsubs    = require('../../utils/jsonsubs');
 var Promise     = require('promise');
 var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
@@ -7,6 +5,7 @@ var request     = require('superagent-promise');
 var assert      = require('assert');
 var base        = require('taskcluster-base');
 var helpers     = require('../../scheduler/helpers');
+var taskcluster = require('taskcluster-client');
 
 // Common schema prefix
 var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/scheduler/v1/';
@@ -16,12 +15,14 @@ var SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/scheduler/v1/';
  *
  * In this API implementation we shall assume the following context:
  * {
- *   Task:        // Instance of Task from data.js
- *   TaskGraph:   // Instance of TaskGraph from data.js
- *   publisher:   // Publisher from base.Exchanges
- *   queue:       // Instance of taskcluster.Queue
- *   schedulerId: // schedulerId from configuration
- *   validator:   // JSON validator created with base.validator
+ *   Task:          // Instance of Task from data.js
+ *   TaskGraph:     // Instance of TaskGraph from data.js
+ *   publisher:     // Publisher from base.Exchanges
+ *   queue:         // Instance of taskcluster.Queue with scheduler credentials
+ *   credentials:   // Credentials for taskcluster.Queue
+ *   queueBaseUrl:  // BaseUrl for taskcluster-queue
+ *   schedulerId:   // schedulerId from configuration
+ *   validator:     // JSON validator created with base.validator
  * }
  */
 var api = new base.API({
@@ -43,68 +44,40 @@ var api = new base.API({
 // Export api
 module.exports = api;
 
-/** Create tasks */
+/** Create task-graph */
 api.declare({
-  method:         'post',
-  route:          '/task-graph/create',
+  method:         'put',
+  route:          '/task-graph/:taskGraphId',
   name:           'createTaskGraph',
+  scopes:         ['scheduler:put:task-graph'],
   input:          SCHEMA_PREFIX_CONST + 'task-graph.json#',
-  skipInputValidation:  true, // we'll do this after parameter substitution
-  output:         SCHEMA_PREFIX_CONST + 'create-task-graph-response.json#',
+  output:         SCHEMA_PREFIX_CONST + 'task-graph-status-response.json#',
   title:          "Create new task-graph",
   description: [
     "Create a new task-graph, the `status` of the resulting JSON is a",
     "task-graph status structure, you can find the `taskGraphId` in this",
     "structure.",
     "",
-    "**Parameter substitution,** the task-graph submitted in the",
-    "_request payload_ may feature a set of parameters, these will be",
-    "substituted into all strings in the JSON body before the body is",
-    "validated against the request schema.",
-    "",
-    "To reference a parameter specified in the `params` section, you wrap",
-    "the _key_ in double braces inside a string in the JSON. In the example",
-    "below the `routing` key becomes `\"try.task-graph\"` after parameter",
-    "substitution.",
-    "```js",
-    "{",
-    "  params: {",
-    "    repository:   \"try\"",
-    "  },",
-    "  routing: \"{{repository}}.task-graph\",",
-    "  ...",
-    "}",
-    "```",
-    "",
-    "Parameters are limited to string interpolation, but can also be",
-    "substituted into JSON keys. The feature is useful for substituting in",
-    "values that change like revision hash, or commonly used values, e.g. a",
-    "preferred `workerType`.",
-    "",
-    "**Referencing required tasks**, in addition to the ability to substitute",
-    "in parameters is also possible to substitute in `taskId`s based on",
-    "task-labels. To substitute in the `taskId` of a task based on task-label,",
-    "using the syntax: `\"{{taskId:<task-label>}}\"`.",
-    "",
-    "This is particularly useful if you want to use artifacts in a dependent",
-    "task. In the example below this is used to make the `taskId` of \"taskA\"",
-    "available in \"taskB\".",
+    "**Referencing required tasks**, it is possible to reference other tasks",
+    "in the task-graph that must be completed successfully before a task is",
+    "scheduled. You just specify the `taskId` in the list of `required` tasks.",
+    "See the example below, where the second task requires the first task.",
     "```js",
     "{",
     "  ...",
     "  tasks: [",
     "    {",
-    "      label:      \"taskA\",",
+    "      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",",
     "      requires:   [],",
     "      ...",
     "    },",
     "    {",
-    "      label:      \"taskB\",",
-    "      requires:   [\"taskA\"],",
+    "      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",",
+    "      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],",
     "      task: {",
     "        payload: {",
     "          env: {",
-    "            TASK_A:   \"{{taskId:taskA}}\"",
+    "            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"",
     "          }",
     "          ...",
     "        }",
@@ -116,41 +89,55 @@ api.declare({
     "}",
     "```",
     "",
-    "**Task-labels**, as illustrated in the example above all tasks in a",
-    "task-graph have a unique label. This label is used to reference required",
-    "tasks. Please, note that these labels are only relevant at task-graph",
-    "level, and the task-graph scheduler prefers to translate them to",
-    "`taskId`s, but it does maintain the mapping.",
-    "",
-    "",
     "**Task routing keys**, all tasks in a task-graph will have their",
-    "task-specific routing key prefixed with `schedulerId`, `taskGraphId` and",
-    "`taskGraphRoutingKey`. This leaves tasks with a routing key on the",
-    "following format",
-    "`<schedulerId>.<taskGraphId>.<taskGraphRoutingKey>.<taskRoutingKey>`.",
+    "task-specific routing key prefixed with `schedulerId` and `taskGraphId`.",
+    "This leaves tasks with a routing key on the following format",
+    "`<schedulerId>.<taskGraphId>.<taskRoutingKey>`.",
     "",
     "In production the `schedulerId` is typically `\"task-graph-scheduler\"`,",
     "but this is configurable, which is useful for testing and configuration",
     "of staging areas, etc.",
     "",
-    "**Remark**, prefixing all task-specific routing keys in this manner does",
+    "Remark, prefixing all task-specific routing keys in this manner does",
     "reduce the maximum size of the task-specific routing key. So keep this",
-    "in mind when constructing the task-graph routing key and task-specific",
-    "routing keys.",
+    "in mind when constructing the task-specific routing keys.",
+    "",
+    "**Task-graph scopes**, a task-graph is assigned a set of scopes, just",
+    "like tasks. Tasks within a task-graph cannot have scopes beyond those",
+    "the task-graph has. The task-graph scheduler will execute all requests",
+    "on behalf of a task-graph using the set of scopes assigned to the",
+    "task-graph. Thus, if you are submitting tasks to `my-worker-type` under",
+    "`my-provisioner` it's important that your task-graph has the scope",
+    "required to define tasks for this `provisionerId` and `workerType`.",
+    "See the queue for details on permissions required. Note, the task-graph",
+    "does not require permissions to schedule the tasks. This is done with",
+    "scopes provided by the task-graph scheduler."
   ].join('\n')
 }, function(req, res) {
-  var ctx = this;
+  var ctx         = this;
   var input       = req.body;
-  var taskGraphId = slugid.v4();
+  var taskGraphId = req.params.taskGraphId;
+
+  // Validate that the requester satisfies all the scopes assigned to the
+  // task-graph
+  if(!req.satisfies([input.scopes])) {
+    return;
+  }
+
+  // Create queue API client delegating scopes this task-graph is authorized
+  // to use
+  var queue = new taskcluster.Queue({
+    baseUrl:          ctx.queueBaseUrl,
+    credentials:      ctx.credentials,
+    authorizedScopes: input.scopes
+  });
 
   // Prepare tasks
   return helpers.prepareTasks(input, {
     taskGraphId:      taskGraphId,
-    params:           input.params,
     schedulerId:      ctx.schedulerId,
     existingTasks:    [],
-    queue:            ctx.queue,
-    routing:          undefined,
+    queue:            queue,
     schema:           SCHEMA_PREFIX_CONST + 'task-graph.json#',
     validator:        ctx.validator
   }).then(function(result) {
@@ -172,15 +159,15 @@ api.declare({
           taskGraphId, requires.length);
     return ctx.TaskGraph.create({
       taskGraphId:        taskGraphId,
-      version:            '0.2.0',
+      version:            1,
       requires:           requires,
       requiresLeft:       _.cloneDeep(requires),
       state:              'running',
       routing:            result.input.routing,
+      scopes:             result.input.scopes,
       details: {
         metadata:         result.input.metadata,
-        tags:             result.input.tags,
-        params:           input.params
+        tags:             result.input.tags
       }
     }).then(function(taskGraph) {
       // Create all task entities
@@ -197,7 +184,7 @@ api.declare({
         debug("Publishing event about taskGraphId: %s", taskGraphId);
         return ctx.publisher.taskGraphRunning({
           status:               taskGraph.status()
-        });
+        }, taskGraph.routing);
       }).then(function() {
         return res.reply({
           status:               taskGraph.status()
@@ -207,36 +194,28 @@ api.declare({
   });
 });
 
+
 /** Post a task-graph decision to extend a task-graph */
 api.declare({
     method:       'post',
   route:          '/task-graph/:taskGraphId/extend',
   name:           'extendTaskGraph',
+  scopes:         ['scheduler:post:extend-task-graph:<taskGraphId>'],
+  deferAuth:      true,
   input:          SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
-  skipInputValidation:  true, // we'll do this after parameter substitution
-  output:         SCHEMA_PREFIX_CONST + 'extend-task-graph-response.json#',
+  output:         SCHEMA_PREFIX_CONST + 'task-graph-status-response.json#',
   title:          "Extend existing task-graph",
   description: [
     "Add a set of tasks to an existing task-graph. The request format is very",
     "similar to the request format for creating task-graphs. But `routing`",
-    "prefix, `metadata` and `tags` cannot be modified and tasks added to the",
-    "task-graph will be prefixed with the same routing key as the existing",
-    "tasks. See `createTaskGraph` for details in routing key prefixing.",
+    "key, `scopes`, `metadata` and `tags` cannot be modified and tasks added",
+    "to the task-graph will be prefixed with the same routing key as the",
+    "existing tasks. See `createTaskGraph` for details in routing key",
+    "prefixing.",
     "",
-    "**Parameter substitution**, tasks added to a task-graph using this API",
-    "end-point are subjected to the same parameter substitution as when the",
-    "task-graph was created. The `params` from request payload can be used to",
-    "add extend and overwrite parameters substituted. Note, that parameters",
-    "modified by `params` submitted here will not be stored and used in",
-    "future calls to this API end-point.",
-    "",
-    "**Task-labels**, just as when task-graphs are created, each task is",
-    "assigned a label. These are used to reference required tasks and to",
-    "substitute in the `taskId` a task using the pattern `{{taskId:<label>}}`.",
-    "",
-    "It is possible to reference task labels of the existing tasks, and the",
-    "labels of the new tasks must be unique within the task-graph, and cannot",
-    "conflict with the labels of the existing tasks.",
+    "**Referencing required tasks**, just as when task-graphs are created,",
+    "each task has a list of required tasks. It is possible to reference",
+    "all `taskId`s within the task-graph.",
     "",
     "**Safety,** it is only _safe_ to call this API end-point while the",
     "task-graph being modified is still running. If the task-graph is",
@@ -249,10 +228,18 @@ api.declare({
   var input       = req.body;
   var taskGraphId = req.params.taskGraphId;
 
+  // Authenticate request by providing parameters
+  if(!req.satisfies({
+    taskGraphId:    taskGraphId,
+  })) {
+    return;
+  }
+
   // Load task graph and tasks
   var taskGraph       = null;
   var existingTasks   = null;
   var existingTaskIds = null;
+  var queue           = null;
   var gotTaskGraph = Promise.all(
     ctx.TaskGraph.load(taskGraphId),
     ctx.Task.loadGraphTasks(taskGraphId)
@@ -262,17 +249,22 @@ api.declare({
     existingTaskIds = existingTasks.map(function(task) {
       return task.taskId;
     });
+    // Create queue API client delegating scopes this task-graph is authorized
+    // to use
+    queue = new taskcluster.Queue({
+      baseUrl:          ctx.queueBaseUrl,
+      credentials:      ctx.credentials,
+      authorizedScopes: taskGraph.scopes
+    });
   });
 
   // Prepare tasks
   return gotTaskGraph.then(function() {
     return helpers.prepareTasks(input, {
       taskGraphId:      taskGraphId,
-      params:           _.defaults(input.params, taskGraph.details.params),
       schedulerId:      ctx.schedulerId,
       existingTasks:    existingTasks,
-      queue:            ctx.queue,
-      routing:          taskGraph.routing,
+      queue:            queue,
       schema:           SCHEMA_PREFIX_CONST + 'extend-task-graph-request.json#',
       validator:        ctx.validator
     }).then(function(result) {
@@ -335,7 +327,7 @@ api.declare({
           debug("Publishing event about taskGraphId: %s", taskGraphId);
           return ctx.publisher.taskGraphExtended({
             status:               taskGraph.status()
-          });
+          }, taskGraph.routing);
         }).then(function() {
           return res.reply({
             status:               taskGraph.status()
@@ -439,11 +431,9 @@ api.declare({
     var taskGraph = values.shift();
     var tasks     = values.shift();
 
-    var taskData = {};
-    tasks.forEach(function(task) {
-      taskData[task.label] = {
+    var taskData = tasks.map(function(task) {
+      return {
         taskId:       task.taskId,
-        taskUrl:      'http://tasks.taskcluster.net/' + task.taskId + '/task.json',
         requires:     task.requires,
         requiresLeft: task.requiresLeft,
         reruns:       task.rerunsAllowed,
@@ -456,7 +446,6 @@ api.declare({
     res.reply({
       status:   taskGraph.status(),
       tasks:    taskData,
-      params:   taskGraph.details.params,
       metadata: taskGraph.details.metadata,
       tags:     taskGraph.details.tags
     });
