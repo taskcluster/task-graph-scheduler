@@ -26,7 +26,16 @@ module.exports = {
     publicUrl:                      'https://scheduler.taskcluster.net',
 
     // Port to listen for requests on
-    port:                           undefined
+    port:                           undefined,
+
+    // Environment 'development' or 'production'
+    env:                            'development',
+
+    // Force SSL, not useful when runnning locally
+    forceSSL:                       false,
+
+    // Trust a forwarding proxy
+    trustProxy:                     false
   },
 
   // Configuration of access to other taskcluster components

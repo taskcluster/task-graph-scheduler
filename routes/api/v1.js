@@ -127,12 +127,9 @@ api.declare({
   // Create queue API client delegating scopes this task-graph is authorized
   // to use
   var queue = new taskcluster.Queue({
-    baseUrl:        ctx.queueBaseUrl,
-    credentials:    ctx.credentials,
-    authorization: {
-      delegating:   true,
-      scopes:       input.scopes
-    }
+    baseUrl:          ctx.queueBaseUrl,
+    credentials:      ctx.credentials,
+    authorizedScopes: input.scopes
   });
 
   // Prepare tasks
@@ -255,12 +252,9 @@ api.declare({
     // Create queue API client delegating scopes this task-graph is authorized
     // to use
     queue = new taskcluster.Queue({
-      baseUrl:        ctx.queueBaseUrl,
-      credentials:    ctx.credentials,
-      authorization: {
-        delegating:   true,
-        scopes:       taskGraph.scopes
-      }
+      baseUrl:          ctx.queueBaseUrl,
+      credentials:      ctx.credentials,
+      authorizedScopes: taskGraph.scopes
     });
   });
 
