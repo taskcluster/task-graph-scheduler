@@ -9,8 +9,6 @@ var taskcluster = require('taskcluster-client');
  * existing task-graph or a new task-graph.
  *
  * This helper will do the following:
- *  - Prefix routing keys
- *  - Validate input against schema
  *  - Validate semantics of input
  *  - Validate scopes
  *  - Upload tasks to taskPurUrls from queue
@@ -53,28 +51,6 @@ exports.prepareTasks = function(input, options) {
          "Instance of taskcluster.Queue is required!");
   assert(options.schema, "A schema for the input is required!");
 
-  // Routing prefix for task.routing
-  var routingPrefix = [
-    options.schedulerId,
-    options.taskGraphId
-  ].join('.') + '.';
-
-  // Prefix task routing keys
-  input.tasks.forEach(function(taskNode) {
-    taskNode.task.routing = routingPrefix + taskNode.task.routing;
-  });
-
-  // Validate against schema
-  var errors = options.validator.check(input, options.schema);
-  if (errors) {
-    debug("Request payload didn't follow schema %s", options.schema);
-    return {
-      message: "Request payload must follow the schema: " + options.schema,
-      error:              errors,
-      parameterizedInput: input
-    };
-  }
-
   // Construct list of a all taskIds
   var allTaskIds = input.tasks.map(function(taskNode) {
     return taskNode.taskId;
@@ -85,6 +61,30 @@ exports.prepareTasks = function(input, options) {
   // Validate semantics
   var errors = [];
   input.tasks.forEach(function(taskNode) {
+    // Check that schedulerId is task-graph-scheduler
+    if (taskNode.task.schedulerId !== options.schedulerId) {
+      errors.push({
+        message:  "schedulerId must match schedulerId for this scheduler",
+        error: {
+          thisSchedulerId:  options.schedulerId,
+          GivenSchedulerId: taskNode.task.schedulerId,
+          taskId:           taskNode.taskId
+        }
+      });
+    }
+
+    // Check that taskGroupId is set to taskGraphId
+    if (taskNode.task.taskGroupId !== options.taskGraphId) {
+      errors.push({
+        message:  "taskGroupId must be set to taskGraphId for this scheduler",
+        error: {
+          taskGraphId:      options.taskGraphId,
+          taskGroupId:      taskNode.task.taskGroupId,
+          taskId:           taskNode.taskId
+        }
+      });
+    }
+
     // Check for duplicates in requires
     if (!_.isEqual(taskNode.requires, _.uniq(taskNode.requires))) {
       errors.push({
@@ -108,11 +108,10 @@ exports.prepareTasks = function(input, options) {
 
   // Report errors found
   if (errors.length > 0) {
-    return {
+    return Promise.resolve({
       message:              "Errors found in task nodes",
-      error:                errors,
-      parameterizedInput:   input
-    }
+      error:                errors
+    });
   }
 
   // Construct task JSON for Task.create()
@@ -148,20 +147,24 @@ exports.prepareTasks = function(input, options) {
       taskNode.taskId,
       taskNode.task
     ).catch(function(err) {
-      // If we failed to upload the queue, let's report the error from the queue
-      errors.push({
-        message:  err.message,
-        error:    err.body
-      });
+      // Handle authentication as these happen when the task-graph wasn't given
+      // enough scopes and hence we couldn't defineTask. It's 400 error.
+      if (err.statusCode === 401) {
+        return queueErrors.push({
+          message:  err.message,
+          error:    err.body
+        });
+      }
+      throw err;
     });
   })).then(function() {
     // Report errors from defining tasks on the queue, like things like missing
     // authentication scopes whatever...
     if(queueErrors.length > 0) {
       return {
-        message:            "Error(s) occurred on queue while defining tasks",
-        error:              errors,
-        parameterizedInput: input
+        message:            "You didn't give the task-graph scopes" +
+                            "allowing it define tasks on the queue.",
+        error:              queueErrors
       };
     }
 

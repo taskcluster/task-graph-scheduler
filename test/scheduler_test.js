@@ -14,17 +14,19 @@ suite('scheduler (task-graph)', function() {
   deadline.setMinutes(deadline.getMinutes() + 25);
 
   // Hold reference to taskIds
+  var taskGraphId = null;
   var taskIdA = null;
   var taskIdB = null;
 
   // Task graph that'll post in this test
   var makeTaskGraph = function() {
     // Find task ids for A and B
+    taskGraphId = slugid.v4();
     taskIdA = slugid.v4();
     taskIdB = slugid.v4();
     return {
       "scopes": [
-        "queue:post:define-task:dummy-test-provisioner/dummy-test-worker-type"
+        "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
       ],
       "routing":                "",
       "tasks": [
@@ -35,6 +37,8 @@ suite('scheduler (task-graph)', function() {
           "task": {
             "provisionerId":    "dummy-test-provisioner",
             "workerType":       "dummy-test-worker-type",
+            "schedulerId":      "dummy-test-scheduler",
+            "taskGroupId":      taskGraphId,
             "scopes":           [],
             "routing":          "",
             "retries":          3,
@@ -62,6 +66,8 @@ suite('scheduler (task-graph)', function() {
           "task": {
             "provisionerId":    "dummy-test-provisioner",
             "workerType":       "dummy-test-worker-type",
+            "schedulerId":      "dummy-test-scheduler",
+            "taskGroupId":      taskGraphId,
             "scopes":           [],
             "routing":          "",
             "retries":          3,
@@ -95,6 +101,44 @@ suite('scheduler (task-graph)', function() {
       }
     }
   };
+
+  test("Schedule a task-graph", function() {
+    this.timeout(60 * 1000);
+
+    // Make task graph
+    var taskGraph = makeTaskGraph();
+
+    // Submit taskgraph to scheduler
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(result.status.taskGraphId === taskGraphId,
+             "Didn't get taskGraphId");
+    });
+  });
+
+  test("Schedule a task-graph (scoping issue)", function() {
+    this.timeout(60 * 1000);
+
+    // Make task graph
+    var taskGraph = makeTaskGraph();
+    taskGraph.scopes = [];
+
+    // Submit taskgraph to scheduler
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(false, "This should have failed");
+    }, function(err) {
+      // We're looking for a 400 error as this is because we didn't enough
+      // scopes to post to queue
+      assert(err.statusCode === 400, "Expected an error");
+    });
+  });
 
   test("Schedule a task-graph and run to completion", function() {
     this.timeout(120 * 1000);
@@ -133,7 +177,6 @@ suite('scheduler (task-graph)', function() {
     });
 
     // Submit taskgraph to scheduler
-    var taskGraphId = slugid.v4();
     debug("### Posting task-graph");
     return subject.scheduler.createTaskGraph(
       taskGraphId,

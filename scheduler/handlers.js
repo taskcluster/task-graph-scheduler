@@ -57,13 +57,13 @@ Handlers.prototype.setup = function() {
 
   // Binding for completed tasks
   var completedBinding = this.queueEvents.taskCompleted({
-    routing:    this.schedulerId + '.#'
+    schedulerId:    this.schedulerId
   });
   this.listener.bind(completedBinding);
 
   // Binding for failed tasks
   var failedBinding = this.queueEvents.taskFailed({
-    routing:    this.schedulerId + '.#'
+    schedulerId:    this.schedulerId
   });
   this.listener.bind(failedBinding);
 

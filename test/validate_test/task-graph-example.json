@@ -9,6 +9,8 @@
       "task": {
         "provisionerId":    "aws-provisioner",
         "workerType":       "ami-cc5c30fc",
+        "schedulerId":      "my-scheduler",
+        "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
         "routing":          "",
         "scopes":           [],
         "retries":          3,
@@ -44,6 +46,8 @@
       "task": {
         "provisionerId":    "aws-provisioner",
         "workerType":       "ami-cc5c30fc",
+        "schedulerId":      "my-scheduler",
+        "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
         "routing":          "",
         "scopes":           [],
         "retries":          3,

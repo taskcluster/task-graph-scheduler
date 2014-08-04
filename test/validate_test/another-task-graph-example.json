@@ -1,6 +1,6 @@
 {
     "scopes": [
-      "queue:post:define-task:dummy-test-provisioner/dummy-test-worker-type"
+      "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
     ],
     "routing":                "",
     "tasks": [
@@ -11,6 +11,8 @@
         "task": {
           "provisionerId":    "dummy-test-provisioner",
           "workerType":       "dummy-test-worker-type",
+          "schedulerId":      "my-scheduler",
+          "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
           "scopes":           [],
           "routing":          "",
           "retries":          3,
@@ -38,6 +40,8 @@
         "task": {
           "provisionerId":    "dummy-test-provisioner",
           "workerType":       "dummy-test-worker-type",
+          "schedulerId":      "my-scheduler",
+          "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
           "scopes":           [],
           "routing":          "",
           "retries":          3,

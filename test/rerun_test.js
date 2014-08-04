@@ -14,15 +14,17 @@ suite('scheduler (rerun)', function() {
   deadline.setMinutes(deadline.getMinutes() + 25);
 
   // Hold reference to taskId
+  var taskGraphId = null;
   var taskId = null;
 
   // Task graph that'll post in this test
   var makeTaskGraph = function() {
     // Find task id
+    taskGraphId = slugid.v4();
     taskId = slugid.v4();
     return {
       "scopes": [
-        "queue:post:define-task:dummy-test-provisioner/dummy-test-worker-type"
+        "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
       ],
       "routing":                "",
       "tasks": [
@@ -33,6 +35,8 @@ suite('scheduler (rerun)', function() {
           "task": {
             "provisionerId":    "dummy-test-provisioner",
             "workerType":       "dummy-test-worker-type",
+            "schedulerId":      "dummy-test-scheduler",
+            "taskGroupId":      taskGraphId,
             "scopes":           [],
             "routing":          "",
             "retries":          3,
@@ -94,7 +98,6 @@ suite('scheduler (rerun)', function() {
     });
 
     // Submit taskgraph to scheduler
-    var taskGraphId = slugid.v4();
     debug("### Posting task-graph");
     return subject.scheduler.createTaskGraph(
       taskGraphId,
@@ -177,7 +180,6 @@ suite('scheduler (rerun)', function() {
     });
 
     // Submit taskgraph to scheduler
-    var taskGraphId = slugid.v4();
     debug("### Posting task-graph");
     return subject.scheduler.createTaskGraph(
       taskGraphId,
