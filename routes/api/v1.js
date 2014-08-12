@@ -138,7 +138,7 @@ api.declare({
     validator:        ctx.validator
   }).then(function(result) {
     if (result.error || !result.tasks) {
-      return res.json(400, result);
+      return res.status(400).json(result);
     }
 
     // Find leaf tasks, these are the ones the task-graph will wait for before
