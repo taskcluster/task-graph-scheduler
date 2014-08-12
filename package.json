@@ -17,7 +17,7 @@
     "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
     "taskcluster-client":               "0.11.1",
-    "taskcluster-base":                 "0.3.3",
+    "taskcluster-base":                 "0.3.8",
     "azure-table-node":                 "1.4.1"
   },
   "devDependencies": {
