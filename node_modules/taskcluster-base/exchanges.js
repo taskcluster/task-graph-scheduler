@@ -40,6 +40,7 @@ var Publisher = function(conn, channel, entries, options) {
         // Construct message and routing key from arguments
         var message     = entry.messageBuilder.apply(undefined, args);
         var routingKey  = entry.routingKeyBuilder.apply(undefined, args);
+        var CCs         = entry.CCBuilder.apply(undefined, args);
 
         // Validate against schema
         var errors = that._options.validator.check(message, entry.schema);
@@ -55,6 +56,9 @@ var Publisher = function(conn, channel, entries, options) {
         if (typeof(routingKey) !== 'string') {
           routingKey = entry.routingKey.map(function(key) {
             var word = routingKey[key.name];
+            if (key.constant) {
+              word = key.constant;
+            }
             if (!key.required && (word === undefined || word === null)) {
               word = '_';
             }
@@ -88,7 +92,8 @@ var Publisher = function(conn, channel, entries, options) {
         that._channel.publish(exchange, routingKey, new Buffer(data, 'utf8'), {
           persistent:         true,
           contentType:        'application/json',
-          contentEncoding:    'utf-8'
+          contentEncoding:    'utf-8',
+          CC:                 CCs
         }, function(err, val) {
           if (err) {
             debug("Failed to publish message: %j and routingKey: %s, " +
@@ -148,6 +153,7 @@ var Exchanges = function(options) {
  *       summary:        "Details in **markdown**",  // For documentation
  *       multipleWords:  true || false,  // true, if entry can contain dot
  *       required:       true || false,  // true, if a value is required
+ *       constant:      'constant',      // Constant value, always this value
  *       maxSize:        22,             // Maximum size of word
  *     },
  *     // More entries...
@@ -155,6 +161,7 @@ var Exchanges = function(options) {
  *   schema:       'http://schemas...'   // Message schema
  *   messageBuilder: function() {...}    // Return message from arguments given
  *   routingKeyBuilder: function() {...} // Return routing key from arguments
+ *   CCBuilder: function() {...}         // Return list of CC'ed routing keys
  * }
  *
  * Remark, it is only possible to have one routing key entry that has the
@@ -218,6 +225,17 @@ Exchanges.prototype.declare = function(options) {
       firstMultiWordKey = key.name;
     }
 
+    if (key.constant) {
+      // Check that any constant is indeed a string
+      assert(typeof(key.constant) === 'string',
+             "constant must be a string, if provided");
+
+      // Set maxSize
+      if (!key.maxSize) {
+        key.maxSize = key.constant.length;
+      }
+    }
+
     // Check that we have a maxSize
     assert(typeof(key.maxSize) == 'number' && key.maxSize > 0,
            "routingKey declaration " + key.name + " must have maxSize > 0");
@@ -238,6 +256,10 @@ Exchanges.prototype.declare = function(options) {
   // Validate routingKeyBuilder
   assert(options.routingKeyBuilder instanceof Function,
          "routingKeyBuilder must be a function");
+
+  // Validate CCBuilder
+  assert(options.CCBuilder instanceof Function,
+         "CCBuilder must be a function");
 
   // Check that `exchange` and `name` are unique
   this._entries.forEach(function(entry) {

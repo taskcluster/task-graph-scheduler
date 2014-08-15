@@ -59,6 +59,10 @@
                   "type":         "string",
                   "description":  "Short description of key in markdown"
                 },
+                "constant": {
+                  "type":         "string",
+                  "description":  "Constant to be used for this field, cannot be overwritten, only present if applicable."
+                },
                 "multipleWords": {
                   "type":         "boolean",
                   "description":  "True, if key may contain dots, which AMQP will consider as words. This determines if `#` or `*` should be used in client libraries"
