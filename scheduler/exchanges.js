@@ -22,12 +22,12 @@ var exchanges = new base.Exchanges({
     "Furthermore, the task-graph scheduler will also require that",
     "`taskGroupId` is equal to the `taskGraphId`.",
     "",
-    "Combined these ensures that `schedulerId` and `taskGroupId`",
+    "Combined these requirements ensures that `schedulerId` and `taskGroupId`",
     "have the same position in the routing keys for the queue exchanges.",
     "See queue documentation for details on queue exchanges. Hence, making",
     "it easy to listen for all tasks in a given task-graph.",
     "",
-    "Note that the first 6 routing key entries used for exchanges on the",
+    "Note that routing key entries 2 through 7 used for exchanges on the",
     "task-graph scheduler is hardcoded to `_`. This is done to preserve",
     "positional equivalence with exchanges offered by the queue."
   ].join('\n')
@@ -39,6 +39,11 @@ module.exports = exchanges;
 /** Common routing key construct for `exchanges.declare` */
 var commonRoutingKey = [
   {
+    name:             'routingKeyKind',
+    summary:          "Identifier for the routing-key kind. This is " +
+                      "always `'primary'` for the formalized routing key.",
+    constant:         'primary'
+  }, {
     name:             'taskId',
     summary:          "Always takes the value `_`",
     required:         false,
@@ -81,11 +86,12 @@ var commonRoutingKey = [
     required:         true,
     maxSize:          22
   }, {
-    name:             'routing',
-    summary:          "task-graph specific routing key (`taskGraph.routing`)",
+    name:             'reserved',
+    summary:          "Space reserved for future routing-key entries, you " +
+                      "should always match this entry with `#`. As " +
+                      "automatically done by our tooling, if not specified.",
     multipleWords:    true,
-    required:         true,
-    maxSize:          64
+    maxSize:          1
   }
 ];
 
@@ -96,12 +102,19 @@ var commonMessageBuilder = function(message) {
 };
 
 /** Build a routing-key from message */
-var commonRoutingKeyBuilder = function(message, routing) {
+var commonRoutingKeyBuilder = function(message) {
   return {
     schedulerId:      message.status.schedulerId,
-    taskGraphId:      message.status.taskGraphId,
-    routing:          routing
+    taskGraphId:      message.status.taskGraphId
   };
+};
+
+/** Build a list of routes to CC */
+var commonCCBuilder = function(message, routes) {
+  assert(routes instanceof Array, "routes must be an array");
+  return routes.map(function(route) {
+    return 'route.' + route;
+  });
 };
 
 // Common schema prefix
@@ -120,7 +133,8 @@ exchanges.declare({
   routingKey:         commonRoutingKey,
   schema:             SCHEMA_PREFIX_CONST + 'task-graph-running-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
 });
 
 /** Task-graph extended exchange */
@@ -136,7 +150,8 @@ exchanges.declare({
   routingKey:         commonRoutingKey,
   schema:             SCHEMA_PREFIX_CONST + 'task-graph-extended-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
 });
 
 /** Task-graph blocked exchange */
@@ -157,7 +172,8 @@ exchanges.declare({
   routingKey:         commonRoutingKey,
   schema:             SCHEMA_PREFIX_CONST + 'task-graph-blocked-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
 });
 
 /** Task-graph finished exchange */
@@ -173,5 +189,6 @@ exchanges.declare({
   routingKey:         commonRoutingKey,
   schema:             SCHEMA_PREFIX_CONST + 'task-graph-finished-message.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder
+  routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder
 });

@@ -30,8 +30,8 @@ var TaskGraph = base.Entity.configure({
       key:              'state',
       type:             'string'
     }, {
-      key:              'routing',
-      type:             'string'
+      key:              'routes',
+      type:             'json'
     }, {
       key:              'scopes',
       type:             'json'

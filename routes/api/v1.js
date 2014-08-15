@@ -108,15 +108,29 @@ api.declare({
     "See the queue for details on permissions required. Note, the task-graph",
     "does not require permissions to schedule the tasks. This is done with",
     "scopes provided by the task-graph scheduler."
+    "",
+    "**Task-graph specific routing-keys**, using the `taskGraph.routes`",
+    "property you may define task-graph specific routing-keys. If a task-graph",
+    "has a task-graph specific routing-key: `<route>`, then the poster will",
+    "be required to posses the scope `scheduler:route:<route>`. And when the",
+    "an AMQP message about the task-graph is published the message will be",
+    "CC'ed with the routing-key: `route.<route>`. This is useful if you want",
+    "another component to listen for completed tasks you have posted."
   ].join('\n')
 }, function(req, res) {
   var ctx         = this;
   var input       = req.body;
   var taskGraphId = req.params.taskGraphId;
 
+  // Find scopes required for task-graph specific routes
+  var routeScopes = input.routes.map(function(route) {
+    return 'scheduler:route:' + route;
+  });
+
   // Validate that the requester satisfies all the scopes assigned to the
-  // task-graph
-  if(!req.satisfies([input.scopes])) {
+  // task-graph and required by task-graph specific routes
+  if(!req.satisfies([input.scopes]) ||
+     !req.satisfies([routeScopes])) {
     return;
   }
 
@@ -159,7 +173,7 @@ api.declare({
       requires:           requires,
       requiresLeft:       _.cloneDeep(requires),
       state:              'running',
-      routing:            result.input.routing,
+      routes:             result.input.routes,
       scopes:             result.input.scopes,
       details: {
         metadata:         result.input.metadata,
@@ -180,7 +194,7 @@ api.declare({
         debug("Publishing event about taskGraphId: %s", taskGraphId);
         return ctx.publisher.taskGraphRunning({
           status:               taskGraph.status()
-        }, taskGraph.routing);
+        }, taskGraph.routes);
       }).then(function() {
         return res.reply({
           status:               taskGraph.status()
@@ -203,11 +217,8 @@ api.declare({
   title:          "Extend existing task-graph",
   description: [
     "Add a set of tasks to an existing task-graph. The request format is very",
-    "similar to the request format for creating task-graphs. But `routing`",
-    "key, `scopes`, `metadata` and `tags` cannot be modified and tasks added",
-    "to the task-graph will be prefixed with the same routing key as the",
-    "existing tasks. See `createTaskGraph` for details in routing key",
-    "prefixing.",
+    "similar to the request format for creating task-graphs. But `routes`",
+    "key, `scopes`, `metadata` and `tags` cannot be modified.",
     "",
     "**Referencing required tasks**, just as when task-graphs are created,",
     "each task has a list of required tasks. It is possible to reference",
@@ -323,7 +334,7 @@ api.declare({
           debug("Publishing event about taskGraphId: %s", taskGraphId);
           return ctx.publisher.taskGraphExtended({
             status:               taskGraph.status()
-          }, taskGraph.routing);
+          }, taskGraph.routes);
         }).then(function() {
           return res.reply({
             status:               taskGraph.status()

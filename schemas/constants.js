@@ -33,16 +33,6 @@ module.exports = {
     "enum":         ["running", "blocked", "finished"]
   },
 
-  // Task-graph specific routing key, also prefixed to all task-specific routing
-  // keys along with taskGraphId and schedulerId
-  "routing": {
-    "title":        "Routing Key",
-    "description":  "Task-graph specific routing key, may contain dots "+
-                    " (`.`) for arbitrary sub-keys",
-    "type":         "string",
-    "maxLength":    64
-  },
-
   // Task-Graph scopes
   "scopes": {
     "title":        "Scopes",

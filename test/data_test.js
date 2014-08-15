@@ -53,7 +53,7 @@ suite('data', function() {
         requires:           [],
         requiresLeft:       [],
         state:              'finished',
-        routing:            '',
+        routes:             [],
         scopes:             [],
         details: {
           metadata:         {},

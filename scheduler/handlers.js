@@ -133,7 +133,7 @@ Handlers.prototype.checkTaskGraphFinished = function(taskGraphId,
         assert(taskGraph.state == 'finished', "taskGraph should be finished!");
         return that.publisher.taskGraphFinished({
           status:           taskGraph.status()
-        }, taskGraph.routing);
+        }, taskGraph.routes);
       }
     });
   });
@@ -162,7 +162,7 @@ Handlers.prototype.blockTaskGraph = function (taskGraphId, blockingTaskId) {
         return that.publisher.taskGraphBlocked({
           status:           taskGraph.status(),
           taskId:           blockingTaskId
-        }, taskGraph.routing);
+        }, taskGraph.routes);
       }
       debug("Task-graph: %s was already declared blocked", taskGraphId);
     });
@@ -207,8 +207,8 @@ Handlers.prototype.rerunTaskOrBlock = function(task, message) {
 /** Handle notifications of failed messages */
 Handlers.prototype.failed = function(message) {
   var that = this;
-  // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.routing.routing.split('.')[1];
+  // Extract the taskGraphId from the routing key
+  var taskGraphId     = message.routing.taskGroupId;
   var blockingTaskId  = message.payload.status.taskId;
   debug("Got message that taskId: %s failed", blockingTaskId);
 
@@ -238,8 +238,8 @@ Handlers.prototype.failed = function(message) {
 /** Handle notifications of completed messages */
 Handlers.prototype.completed = function(message) {
   var that = this;
-  // Extract the taskGraphId from the task-specific routing key
-  var taskGraphId     = message.routing.routing.split('.')[1];
+  // Extract the taskGraphId from the routing key
+  var taskGraphId     = message.routing.taskGroupId;
   var completedTaskId = message.payload.status.taskId;
   debug("Got message that taskId: %s completed", completedTaskId);
 

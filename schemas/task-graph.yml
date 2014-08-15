@@ -1,0 +1,85 @@
+id:             http://schemas.taskcluster.net/scheduler/v1/task-graph.json#
+$schema:        http://json-schema.org/draft-04/schema#
+title:          "Task-Graph Definition"
+description: |
+  Definition of a task-graph that can be scheduled
+type:               object
+properties:
+  scopes:           {$const: "scopes"}
+  routes:
+    title:          "Task-graph specific routes"
+    description: |
+      List of task-graph specific routes, AMQP messages will be CC'ed to these
+      routes prefixed by `'route.'`.
+    type:           array
+    items:
+      title:        "Task-Graph specific route"
+      description: |
+        A task-graph specific route, AMQP messages will be CC'ed with a
+        routing key matching `route.<task-graph specific route>`. It's possible
+        to dot (`.`) in the task-graph specific route to make sub-keys, etc.
+        See the RabbitMQ
+        [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
+        for examples on how to use routing-keys.
+      type:         string
+      maxLength:    249
+      minLength:    1
+    maxItems:       10
+    uniqueItems:    true
+  tasks:            {$const: "task-nodes"}
+  metadata:
+    title:          "Meta-data"
+    description: |
+      Required task metadata"
+    type:           object
+    properties:
+      name:
+        title:          "Name"
+        description: |
+          Human readable name of task-graph, give people finding this an idea
+          what this graph is about.
+        type:           string
+        maxLength:      255
+      description:
+        title:          "Description"
+        description: |
+          Human readable description of task-graph, **explain** what it does!
+        type:           string
+        maxLength:      32768
+      owner:
+        title:          "Owner"
+        description: |
+          E-mail of person who caused this task-graph, e.g. the person who did
+          `hg push` or whatever triggered it.
+        type:           string
+        format:         email
+        maxLength:      255
+      source:
+        title:          "Source"
+        description: |
+          Link to source of this task-graph, should specify file, revision and
+          repository
+        type:           string
+        format:         uri
+        maxLength:      4096
+    additionalProperties: false
+    required:
+      - name
+      - description
+      - owner
+      - source
+  tags:
+    title:          "Tags"
+    description: |
+      Arbitrary key-value tags (only strings limited to 4k)
+    type:           object
+    additionalProperties:
+      type:         string
+      maxLength:    4096
+additionalProperties: false
+required:
+  - scopes
+  - routes
+  - tasks
+  - metadata
+  - tags

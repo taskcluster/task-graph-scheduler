@@ -22,7 +22,7 @@ var taskcluster = require('taskcluster-client');
  *   existingTasks:      // Existing tasks in the task-graph
  *   queue:              // Instance of taskcluster.Queue delegating scopes
  *                       // this task-graph is authorized to use
- *   schema:             // Schema for validation routing-key prefixed input
+ *   schema:             // Schema for validation
  *   validator:          // base.validator instance
  * }
  *
