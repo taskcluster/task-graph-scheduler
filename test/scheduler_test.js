@@ -28,7 +28,7 @@ suite('scheduler (task-graph)', function() {
       "scopes": [
         "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
       ],
-      "routing":                "",
+      "routes":           [],
       "tasks": [
         {
           "taskId":             taskIdA,
@@ -40,7 +40,7 @@ suite('scheduler (task-graph)', function() {
             "schedulerId":      "dummy-test-scheduler",
             "taskGroupId":      taskGraphId,
             "scopes":           [],
-            "routing":          "",
+            "routes":           [],
             "retries":          3,
             "priority":         5,
             "created":          created.toJSON(),
@@ -69,7 +69,7 @@ suite('scheduler (task-graph)', function() {
             "schedulerId":      "dummy-test-scheduler",
             "taskGroupId":      taskGraphId,
             "scopes":           [],
-            "routing":          "",
+            "routes":           [],
             "retries":          3,
             "priority":         5,
             "created":          created.toJSON(),

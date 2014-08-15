@@ -107,7 +107,7 @@ api.declare({
     "required to define tasks for this `provisionerId` and `workerType`.",
     "See the queue for details on permissions required. Note, the task-graph",
     "does not require permissions to schedule the tasks. This is done with",
-    "scopes provided by the task-graph scheduler."
+    "scopes provided by the task-graph scheduler.",
     "",
     "**Task-graph specific routing-keys**, using the `taskGraph.routes`",
     "property you may define task-graph specific routing-keys. If a task-graph",

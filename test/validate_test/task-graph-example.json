@@ -1,5 +1,5 @@
 {
-  "routing":                "",
+  "routes":                 [],
   "scopes":                 ["scope-scope"],
   "tasks": [
     {
@@ -11,7 +11,7 @@
         "workerType":       "ami-cc5c30fc",
         "schedulerId":      "my-scheduler",
         "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
-        "routing":          "",
+        "routes":           [],
         "scopes":           [],
         "retries":          3,
         "priority":         5,
@@ -48,7 +48,7 @@
         "workerType":       "ami-cc5c30fc",
         "schedulerId":      "my-scheduler",
         "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
-        "routing":          "",
+        "routes":           [],
         "scopes":           [],
         "retries":          3,
         "priority":         5,

@@ -2,7 +2,7 @@
     "scopes": [
       "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
     ],
-    "routing":                "",
+    "routes":                 [],
     "tasks": [
       {
         "taskId":             "XgvL0qtSR92cIWpcwdGKCA",
@@ -14,7 +14,7 @@
           "schedulerId":      "my-scheduler",
           "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
           "scopes":           [],
-          "routing":          "",
+          "routes":           [],
           "retries":          3,
           "priority":         5,
           "created":          "2014-03-01T22:19:32.124Z",
@@ -43,7 +43,7 @@
           "schedulerId":      "my-scheduler",
           "taskGroupId":      "XgvL0qtSR92cIWpcwdGKCA",
           "scopes":           [],
-          "routing":          "",
+          "routes":           [],
           "retries":          3,
           "priority":         5,
           "created":          "2014-03-01T22:19:32.124Z",
