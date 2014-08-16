@@ -24,6 +24,8 @@
     },
     "entries": {
       "type":                 "array",
+      "title":                "Entries",
+      "description":          "Array of methods in this reference",
       "items": {
         "type":               "object",
         "properties": {

@@ -13,4 +13,7 @@ base.validator({
   }
 }).then(function() {
   console.log("Published");
+}, function(err) {
+  console.log("Failed to publish:");
+  console.log(err);
 });
