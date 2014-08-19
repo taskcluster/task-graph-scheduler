@@ -50,7 +50,7 @@ var launch = function(profile) {
     constants:        require('../schemas/constants'),
     schemaPrefix:     'scheduler/v1/',
     preload: [
-      'http://schemas.taskcluster.net/queue/v1/task.json'
+      'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
     ]
   }).then(function(validator_) {
     validator = validator_;

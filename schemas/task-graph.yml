@@ -5,7 +5,20 @@ description: |
   Definition of a task-graph that can be scheduled
 type:               object
 properties:
-  scopes:           {$const: "scopes"}
+  scopes:
+    title:          "Scopes"
+    description: |
+      List of scopes (or scope-patterns) that tasks of the task-graph is
+      authorized to use.
+    type:           array
+    default:        []
+    items:
+      title:        "Scope"
+      description: |
+        A scope (or scope-patterns) which a task of the task-graph is
+        authorized to use. This can be a string or a string ending with `*`
+        which will authorize all scopes for which the string is a prefix.
+      type:         string
   routes:
     title:          "Task-graph specific routes"
     description: |
@@ -26,6 +39,7 @@ properties:
       minLength:    1
     maxItems:       10
     uniqueItems:    true
+    default:        []
   tasks:            {$const: "task-nodes"}
   metadata:
     title:          "Meta-data"
@@ -76,10 +90,8 @@ properties:
     additionalProperties:
       type:         string
       maxLength:    4096
+    default:        {}
 additionalProperties: false
 required:
-  - scopes
-  - routes
   - tasks
   - metadata
-  - tags

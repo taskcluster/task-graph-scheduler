@@ -51,7 +51,7 @@ var launch = function(profile) {
     publish:          cfg.get('scheduler:publishMetaData') === 'true',
     schemaPrefix:     'scheduler/v1/',
     preload: [
-      'http://schemas.taskcluster.net/queue/v1/task.json'
+      'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
     ],
     aws:              cfg.get('aws')
   }).then(function(validator_) {

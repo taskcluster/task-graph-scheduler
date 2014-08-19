@@ -75,18 +75,20 @@ module.exports = {
             "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
             "type":           "string",
             "pattern":        {"$const": "slugid-pattern"}
-          }
+          },
+          "default":          []
         },
         "reruns": {
           "title":            "Re-runs",
           "description":      "Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.",
           "type":             "integer",
           "minimum":          0,
-          "maximum":          999
+          "maximum":          100,
+          "default":          0
         },
-        "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/task.json#"}
+        "task":               {"$ref": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#"}
       },
-      "required":             ["taskId", "requires", "reruns", "task"]
+      "required":             ["taskId", "task"]
     }
   }
 };
