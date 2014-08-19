@@ -8,7 +8,7 @@ suite('validate', function() {
       folder:       path.join(__dirname, '..', 'schemas'),
       constants:    require('../schemas/constants'),
       preload: [
-        'http://schemas.taskcluster.net/queue/v1/task.json'
+        'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
       ]
     },
     basePath:       path.join(__dirname, 'validate_test'),
