@@ -16,7 +16,7 @@
     "debug":                            "0.7.4",
     "superagent":                       "0.18.2",
     "superagent-promise":               "0.1.2",
-    "taskcluster-client":               "0.14.5",
+    "taskcluster-client":               "0.14.6",
     "taskcluster-base":                 "0.4.6",
     "azure-table-node":                 "1.4.1"
   },
