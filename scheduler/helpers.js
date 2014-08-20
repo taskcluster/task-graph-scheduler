@@ -50,6 +50,35 @@ exports.prepareTasks = function(input, options) {
   assert(options.queue instanceof taskcluster.Queue,
          "Instance of taskcluster.Queue is required!");
   assert(options.schema, "A schema for the input is required!");
+  assert(options.validator, "A validator object is required");
+
+
+  // Provide defaults for schedulerId and taskGroupId, keep in mind that we're
+  // using the schema provided by the queue and can't determine what defaults
+  // is set in this schema. So we just want to make sure that the defaults will
+  // work. If defined we don't overwrite them, but we shall validate them later
+  // so a moron who provided wrong values will get an error.
+  if (input && input.tasks instanceof Array) {
+    input.tasks.forEach(function(taskNode) {
+      // Provide schedulerId if not already present
+      if (taskNode.task && taskNode.task.schedulerId === undefined) {
+        taskNode.task.schedulerId = options.schedulerId;
+      }
+      // Provide taskGroupId if not already present
+      if (taskNode.task && taskNode.task.taskGroupId === undefined) {
+        taskNode.task.taskGroupId = options.taskGraphId;
+      }
+    });
+  }
+
+  // Validate input
+  var schemaErrors = options.validator.check(input, options.schema);
+  if (schemaErrors) {
+    return Promise.resolve({
+      'message':  "Request payload must follow the schema: " + options.schema,
+      'error':    schemaErrors
+    });
+  }
 
   // Construct list of a all taskIds
   var allTaskIds = input.tasks.map(function(taskNode) {
