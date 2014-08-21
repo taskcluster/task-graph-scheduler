@@ -98,6 +98,7 @@ suite('scheduler (task-graph)', function() {
     }
   };
 
+
   test("Schedule a task-graph", function() {
     // Make task graph
     var taskGraph = makeTaskGraph();
@@ -112,6 +113,25 @@ suite('scheduler (task-graph)', function() {
              "Didn't get taskGraphId");
     });
   });
+
+  test("Schedule a task-graph (no routes)", function() {
+    // Make task graph
+    var taskGraph = makeTaskGraph();
+
+    // Remove routes property
+    delete taskGraph.routes;
+
+    // Submit taskgraph to scheduler
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(result.status.taskGraphId === taskGraphId,
+             "Didn't get taskGraphId");
+    });
+  });
+
 
   test("Schedule a task-graph (scoping issue)", function() {
     // Make task graph

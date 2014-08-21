@@ -124,13 +124,21 @@ api.declare({
   var taskGraphId = req.params.taskGraphId;
 
   // Find scopes required for task-graph specific routes
-  var routeScopes = input.routes.map(function(route) {
+  var routeScopes = (((input || {}).routes) || []).map(function(route) {
     return 'scheduler:route:' + route;
   });
 
+  // Find scopes, don't validate schema will be validated later
+  var scopes = (input || {}).scopes;
+  if (!(scopes instanceof Array) || !scopes.every(function(scope) {
+    return typeof(scope) === 'string';
+  })) {
+    scopes = [];
+  }
+
   // Validate that the requester satisfies all the scopes assigned to the
   // task-graph and required by task-graph specific routes
-  if(!req.satisfies([input.scopes]) ||
+  if(!req.satisfies([scopes]) ||
      !req.satisfies([routeScopes])) {
     return;
   }
@@ -140,7 +148,7 @@ api.declare({
   var queue = new taskcluster.Queue({
     baseUrl:          ctx.queueBaseUrl,
     credentials:      ctx.credentials,
-    authorizedScopes: input.scopes
+    authorizedScopes: scopes
   });
 
   // Prepare tasks
