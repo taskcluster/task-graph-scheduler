@@ -71,8 +71,6 @@ suite('scheduler (rerun)', function() {
   };
 
   test("Rerun in task-graph (finishes)", function() {
-    this.timeout(120 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
 
@@ -153,8 +151,6 @@ suite('scheduler (rerun)', function() {
 
 
   test("Rerun in task-graph (blocks)", function() {
-    this.timeout(120 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
 

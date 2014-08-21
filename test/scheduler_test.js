@@ -99,8 +99,6 @@ suite('scheduler (task-graph)', function() {
   };
 
   test("Schedule a task-graph", function() {
-    this.timeout(60 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
 
@@ -116,8 +114,6 @@ suite('scheduler (task-graph)', function() {
   });
 
   test("Schedule a task-graph (scoping issue)", function() {
-    this.timeout(60 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
     taskGraph.scopes = [];
@@ -136,9 +132,43 @@ suite('scheduler (task-graph)', function() {
     });
   });
 
-  test("Schedule a task-graph and run to completion", function() {
-    this.timeout(120 * 1000);
+  test("Schedule a task-graph (wrong schedulerId)", function() {
+    // Make task graph
+    var taskGraph = makeTaskGraph();
+    taskGraph.tasks[0].task.schedulerId = "certainly-not-ok";
 
+    // Submit taskgraph to scheduler
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(false, "This should have failed");
+    }, function(err) {
+      debug("Expected err: %s, %j", err, err, err.stack);
+      assert(err.statusCode === 400, "Expected an error");
+    });
+  });
+
+  test("Schedule a task-graph (wrong taskGroupId)", function() {
+    // Make task graph
+    var taskGraph = makeTaskGraph();
+    taskGraph.tasks[0].task.taskGroupId = slugid.v4();
+
+    // Submit taskgraph to scheduler
+    debug("### Posting task-graph");
+    return subject.scheduler.createTaskGraph(
+      taskGraphId,
+      taskGraph
+    ).then(function(result) {
+      assert(false, "This should have failed");
+    }, function(err) {
+      debug("Expected err: %s, %j", err, err, err.stack);
+      assert(err.statusCode === 400, "Expected an error");
+    });
+  });
+
+  test("Schedule a task-graph and run to completion", function() {
     // Make task graph
     var taskGraph = makeTaskGraph();
 
