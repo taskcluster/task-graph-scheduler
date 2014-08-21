@@ -42,7 +42,8 @@ var commonRoutingKey = [
     name:             'routingKeyKind',
     summary:          "Identifier for the routing-key kind. This is " +
                       "always `'primary'` for the formalized routing key.",
-    constant:         'primary'
+    constant:         'primary',
+    required:         true
   }, {
     name:             'taskId',
     summary:          "Always takes the value `_`",

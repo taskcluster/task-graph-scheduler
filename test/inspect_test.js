@@ -159,18 +159,18 @@ suite('scheduler (inspect)', function() {
       debug("### Waiting for taskB to become pending");
       return taskBPending;
     }).then(function() {
-      return subject.scheduler.getTaskGraphStatus(taskGraphId);
+      return subject.scheduler.status(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.status.state == 'running',          "got right state");
     }).then(function() {
-      return subject.scheduler.getTaskGraphInfo(taskGraphId);
+      return subject.scheduler.info(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
       assert(result.status.state == 'running',          "got right state");
     }).then(function() {
-      return subject.scheduler.inspectTaskGraph(taskGraphId);
+      return subject.scheduler.inspect(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");

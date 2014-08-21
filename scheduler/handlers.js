@@ -185,9 +185,7 @@ Handlers.prototype.rerunTaskOrBlock = function(task, message) {
     } else {
       this.resolution = {
         completed:      true,
-        success:        false,
-        resultUrl:      message.payload.resultUrl,
-        logsUrl:        message.payload.logsUrl
+        success:        false
       };
     }
   }).then(function() {
@@ -252,9 +250,7 @@ Handlers.prototype.completed = function(message) {
       var task_modified = task.modify(function() {
         this.resolution = {
           completed:      true,
-          success:        true,
-          resultUrl:      message.payload.resultUrl,
-          logsUrl:        message.payload.logsUrl
+          success:        true
         };
       });
 

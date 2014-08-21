@@ -359,7 +359,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/status',
-  name:       'getTaskGraphStatus',
+  name:       'status',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'task-graph-status-response.json',
   title:      "Task Graph Status",
@@ -386,7 +386,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/info',
-  name:       'getTaskGraphInfo',
+  name:       'info',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'task-graph-info-response.json',
   title:      "Task Graph Information",
@@ -417,7 +417,7 @@ api.declare({
 api.declare({
   method:     'get',
   route:      '/task-graph/:taskGraphId/inspect',
-  name:       'inspectTaskGraph',
+  name:       'inspect',
   input:      undefined,
   output:     SCHEMA_PREFIX_CONST + 'inspect-task-graph-response.json',
   title:      "Inspect Task Graph",

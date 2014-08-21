@@ -117,7 +117,7 @@ suite('scheduler (extend)', function() {
       taskGraphId,
       taskGraph
     ).then(function() {
-      return subject.scheduler.inspectTaskGraph(taskGraphId);
+      return subject.scheduler.inspect(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
@@ -129,7 +129,7 @@ suite('scheduler (extend)', function() {
         tasks: [taskB]
       });
     }).then(function() {
-      return subject.scheduler.inspectTaskGraph(taskGraphId);
+      return subject.scheduler.inspect(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
