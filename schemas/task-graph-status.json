@@ -17,12 +17,19 @@
       "maxLength":      {"$const": "identifier-max-length"},
       "pattern":        {"$const": "identifier-pattern"}
     },
-    "state":            {"$const": "state"}
+    "state":            {"$const": "state"},
+    "name": {
+      "title":          "Name",
+      "description":    "Human readable name of task-graph, give people finding this an idea what this graph is about.",
+      "type":           "string",
+      "maxLength":      255
+    }
   },
   "additionalProperties":   false,
   "required": [
     "taskGraphId",
     "schedulerId",
-    "state"
+    "state",
+    "name"
   ]
 }
