@@ -61,8 +61,7 @@ TaskGraph.prototype.status = function() {
   return {
     taskGraphId:    this.taskGraphId,
     schedulerId:    this.schedulerId,
-    state:          this.state,
-    name:           this.details.metadata.name
+    state:          this.state
   };
 };
 
