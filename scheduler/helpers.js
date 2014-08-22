@@ -165,7 +165,11 @@ exports.prepareTasks = function(input, options) {
       requires:         _.cloneDeep(taskNode.requires),
       requiresLeft:     _.cloneDeep(taskNode.requires),
       dependents:       dependents,
-      resolution:       null
+      state:            'unscheduled',
+      details:          {
+        name:           taskNode.task.metadata.name,
+        satisfied:      false
+      }
     };
   });
 
@@ -236,8 +240,7 @@ exports.scheduleDependentTasks = function(task, queue, Task) {
   assert(queue instanceof taskcluster.Queue,
          "Instance of taskcluster.Queue is required");
   assert(Task, "Instance of data.Task is required");
-  assert(task.resolution &&
-         task.resolution.success, "Task must have been resolved successfully");
+  assert(task.details.satisfied, "Task must have been resolved successfully");
 
   // Let's load, modify and schedule all dependent tasks that are ready
   return Promise.all(task.dependents.map(function(dependentTaskId) {
@@ -261,6 +264,9 @@ exports.scheduleDependentTasks = function(task, queue, Task) {
         // If no other tasks are blocked the dependent tasks then we should
         // schedule it.
         if (this.requiresLeft.length == 0) {
+          // Change the state to scheduled
+          this.state = 'scheduled';
+
           // Note, that on the queue this is an idempotent operation, so it is
           // not a problem if we do this more than once.
           return queue.scheduleTask(dependentTaskId).catch(function(err) {

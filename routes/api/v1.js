@@ -333,8 +333,7 @@ api.declare({
         }).then(function(tasks) {
           // Find existing that is resolved successfully
           return Promise.all(tasks.filter(function(task) {
-            return task.resolution &&
-                   task.resolution.success &&
+            return task.details.satisfied &&
                    _.contains(existingTaskIds, task.taskId);
           }).map(function(task) {
             return helpers.scheduleDependentTasks(task);
@@ -450,11 +449,13 @@ api.declare({
     var taskData = tasks.map(function(task) {
       return {
         taskId:       task.taskId,
+        name:         task.details.name,
         requires:     task.requires,
         requiresLeft: task.requiresLeft,
         reruns:       task.rerunsAllowed,
         rerunsLeft:   task.rerunsLeft,
-        resolution:   task.resolution || {},
+        state:        task.state,
+        satisfied:    task.details.satisfied,
         dependents:   task.dependents
       };
     });

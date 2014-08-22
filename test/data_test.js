@@ -73,7 +73,11 @@ suite('data', function() {
         requires:         [],
         requiresLeft:     [],
         dependents:       [],
-        resolution:       null
+        state:            'unscheduled',
+        details: {
+          name:           'some name',
+          satisfied:      false
+        }
       });
 
       // Create task B
@@ -87,7 +91,11 @@ suite('data', function() {
         requires:         [],
         requiresLeft:     [],
         dependents:       [],
-        resolution:       null
+        state:            'scheduled',
+        details: {
+          name:           'some name',
+          satisfied:      true
+        }
       });
 
       // When all is created, test that we load only two (taskA and taskB) using

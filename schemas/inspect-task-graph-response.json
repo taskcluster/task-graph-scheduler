@@ -57,10 +57,20 @@
             "minimum":          0,
             "maximum":          999
           },
-          "resolution": {
-            "type":             "object",
-            "title":            "Task resolution",
-            "description":      "**Warning unstable**, this object holds the state of this task as known to the scheduler. At the moment this isn't formalized yet. Feel free to guess what this means, but rest assured that the API will break without notice. No attempt will be made to maintain backwards compatibility of this object."
+          "state": {
+            "title":            "Task Node State",
+            "description":      "State of the task as considered by the scheduler",
+            "enum": [
+              "unscheduled",
+              "scheduled",
+              "completed",
+              "failed"
+            ]
+          },
+          "satisfied": {
+            "title":            "Task Satisfied",
+            "description":      "true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.",
+            "type":             "boolean"
           },
           "dependents": {
             "title":            "Dependent tasks",
@@ -80,7 +90,8 @@
           "requiresLeft",
           "reruns",
           "rerunsLeft",
-          "resolution",
+          "state",
+          "satisfied",
           "dependents"
         ]
       }

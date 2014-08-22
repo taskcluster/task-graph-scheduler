@@ -121,7 +121,10 @@ var Task = base.Entity.configure({
       key:              'dependents',
       type:             'json'
     }, {
-      key:              'resolution',
+      key:              'state',
+      type:             'string'
+    }, {
+      key:              'details',
       type:             'json'
     }
   ]

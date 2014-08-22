@@ -183,10 +183,8 @@ Handlers.prototype.rerunTaskOrBlock = function(task, message) {
     if (has_rerun_available) {
       this.rerunsLeft -= 1;
     } else {
-      this.resolution = {
-        completed:      true,
-        success:        false
-      };
+      this.state = 'completed';
+      this.details.satisfied = false;
     }
   }).then(function() {
     // If there was a rerun available, we ask the queue to rerun it
@@ -213,17 +211,15 @@ Handlers.prototype.failed = function(message) {
   // Load the blocked task
   var task_loaded = this.Task.load(taskGraphId, blockingTaskId);
 
-  // When modify the task resolution
+  // When modify the task state and satisfied
   var task_modified = task_loaded.then(function(task) {
     return task.modify(function() {
-      this.resolution = {
-        success:      false,
-        completed:    false
-      };
+      this.state = 'failed';
+      this.details.satisfied = false;
     });
   });
 
-  // When task is modified with new resolution it's time declare the task-graph
+  // When task is modified with new state it's time declare the task-graph
   // as blocked by given taskId, note that we should not try to rerun tasks
   // that have failed, as the number of retries have been exhausted by the
   // queue.
@@ -244,17 +240,15 @@ Handlers.prototype.completed = function(message) {
   // Load the completed task
   var task_loaded = this.Task.load(taskGraphId, completedTaskId);
 
-  // When task entity is loaded we modify the task resolution
+  // When task entity is loaded we modify the task state and satisfied
   return task_loaded.then(function(task) {
     if (message.payload.success) {
       var task_modified = task.modify(function() {
-        this.resolution = {
-          completed:      true,
-          success:        true
-        };
+        this.state = 'completed';
+        this.details.satisfied = true;
       });
 
-      // When resolution has been saved,
+      // When state and details has been saved,
       return task_modified.then(function() {
         if (task.dependents.length != 0) {
           // There are dependent tasks, when we should try to schedule those
