@@ -8,6 +8,7 @@
   'Entity',
   'Exchanges',
   'testing',
+  'stats',
   'utils'
 ].forEach(function(name) {
   Object.defineProperty(exports, name, {

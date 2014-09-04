@@ -276,7 +276,7 @@ Exchanges.prototype.declare = function(options) {
 
 /** Configure the events declaration */
 Exchanges.prototype.configure = function(options) {
-  this._options = _.defaults(options, this._options);
+  this._options = _.defaults({}, options, this._options);
 };
 
 /**
@@ -300,7 +300,7 @@ Exchanges.prototype.configure = function(options) {
  * Return a promise for an instance of `Publisher`.
  */
 Exchanges.prototype.connect = function(options) {
-  options = _.defaults(options || {}, this._options);
+  options = _.defaults({}, options || {}, this._options);
 
   // Check we have a connection string
   assert(options.connectionString, "ConnectionString must be provided");
@@ -334,7 +334,7 @@ Exchanges.prototype.connect = function(options) {
 
 /** Return reference as JSON for the declared exchanges */
 Exchanges.prototype.reference = function(options) {
-  options = _.defaults(options || {}, this._options);
+  options = _.defaults({}, options || {}, this._options);
 
   // Check title and description
   assert(options.title,       "title must be provided");
@@ -399,7 +399,7 @@ Exchanges.prototype.reference = function(options) {
  */
 Exchanges.prototype.publish = function(options) {
   // Provide default options
-  options = _.defaults(options || {}, this._options, {
+  options = _.defaults({}, options || {}, this._options, {
     referenceBucket:    'references.taskcluster.net'
   });
   // Check that required options are provided
