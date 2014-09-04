@@ -18,6 +18,9 @@ module.exports = {
 
     // Name of AMQP queue, if a non-exclusive queue is to be used.
     listenerQueueName:            undefined,
+
+    // Name of component in statistics
+    statsComponent:               'scheduler'
   },
 
   // Server configuration
@@ -57,6 +60,20 @@ module.exports = {
       accessToken:                undefined
     }
   },
+
+  // InfluxDB configuration
+  influx: {
+    // Usually provided as environment variables, must be on the form:
+    // https://<user>:<pwd>@<host>:<port>/db/<database>
+    connectionString:               undefined,
+
+    // Maximum delay before submitting pending points
+    maxDelay:                       5 * 60,
+
+    // Maximum pending points in memory
+    maxPendingPoints:               250
+  },
+
 
   // AMQP configuration
   amqp: {

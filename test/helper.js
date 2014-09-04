@@ -41,7 +41,7 @@ var defaultClients = [
 
 /** Return a promise that sleeps for `delay` ms before resolving */
 exports.sleep = function(delay) {
-  new Promise(function(accept) {
+  return new Promise(function(accept) {
     setTimeout(accept, delay);
   });
 }

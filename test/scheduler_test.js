@@ -5,7 +5,6 @@ suite('scheduler (task-graph)', function() {
   var helper      = require('./helper');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var helper      = require('./helper');
   var subject     = helper.setup({title: "schedule task-graph"});
 
   // Create datetime for created and deadline as 25 minutes later

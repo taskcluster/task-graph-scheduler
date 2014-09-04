@@ -17,28 +17,14 @@ var TaskGraph = base.Entity.configure({
       key:              'RowKey',
       type:             'string',
       hidden:           true
-    }, {
-      key:              'version',
-      type:             'number'
-    }, {
-      key:              'requires',
-      type:             'json'
-    }, {
-      key:              'requiresLeft',
-      type:             'json'
-    }, {
-      key:              'state',
-      type:             'string'
-    }, {
-      key:              'routes',
-      type:             'json'
-    }, {
-      key:              'scopes',
-      type:             'json'
-    }, {
-      key:              'details',
-      type:             'json'
-    }
+    },
+    {key: 'version',       type: 'number' },
+    {key: 'requires',      type: 'json'   },
+    {key: 'requiresLeft',  type: 'json'   },
+    {key: 'state',         type: 'string' },
+    {key: 'routes',        type: 'json'   },
+    {key: 'scopes',        type: 'json'   },
+    {key: 'details',       type: 'json'   }
   ]
 });
 
@@ -91,41 +77,23 @@ exports.TaskGraph = TaskGraph;
 var Task = base.Entity.configure({
   mapping: [
     {
-      key:              'PartitionKey',
-      property:         'taskGraphId',
-      type:             'string'
+      key:                  'PartitionKey',
+      property:             'taskGraphId',
+      type:                 'string'
     }, {
-      key:              'RowKey',
-      property:         'taskId',
-      type:             'string'
-    }, {
-      key:              'version',
-      type:             'number'
-    }, {
-      key:              'rerunsAllowed',
-      type:             'number'
-    }, {
-      key:              'rerunsLeft',
-      type:             'number'
-    }, {
-      key:              'deadline',
-      type:             'date'
-    }, {
-      key:              'requires',
-      type:             'json'
-    }, {
-      key:              'requiresLeft',
-      type:             'json'
-    }, {
-      key:              'dependents',
-      type:             'json'
-    }, {
-      key:              'state',
-      type:             'string'
-    }, {
-      key:              'details',
-      type:             'json'
-    }
+      key:                  'RowKey',
+      property:             'taskId',
+      type:                 'string'
+    },
+    {key: 'version',        type: 'number'  },
+    {key: 'rerunsAllowed',  type: 'number'  },
+    {key: 'rerunsLeft',     type: 'number'  },
+    {key: 'deadline',       type: 'date'    },
+    {key: 'requires',       type: 'json'    },
+    {key: 'requiresLeft',   type: 'json'    },
+    {key: 'dependents',     type: 'json'    },
+    {key: 'state',          type: 'string'  },
+    {key: 'details',        type: 'json'    }
   ]
 });
 

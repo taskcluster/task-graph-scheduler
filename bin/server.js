@@ -24,7 +24,8 @@ var launch = function(profile) {
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'azure_accountName',
-      'azure_accountKey'
+      'azure_accountKey',
+      'influx_connectionString'
     ],
     filename:     'task-graph-scheduler'
   });
@@ -74,6 +75,20 @@ var launch = function(profile) {
     credentials:    cfg.get('taskcluster:credentials')
   });
 
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('scheduler:statsComponent'),
+    process:    'server'
+  });
+
   // When: publisher, schema and validator is created, proceed
   return Promise.all(
     publisherCreated,
@@ -98,7 +113,9 @@ var launch = function(profile) {
       publish:          cfg.get('scheduler:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'scheduler/v1/api.json',
-      aws:              cfg.get('aws')
+      aws:              cfg.get('aws'),
+      component:        cfg.get('scheduler:statsComponent'),
+      drain:            influx
     });
   }).then(function(router) {
     // Create app
