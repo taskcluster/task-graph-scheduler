@@ -336,7 +336,7 @@ api.declare({
             return task.details.satisfied &&
                    _.contains(existingTaskIds, task.taskId);
           }).map(function(task) {
-            return helpers.scheduleDependentTasks(task);
+            return helpers.scheduleDependentTasks(task, ctx.queue, ctx.Task);
           }));
         }).then(function() {
           debug("Publishing event about taskGraphId: %s", taskGraphId);
