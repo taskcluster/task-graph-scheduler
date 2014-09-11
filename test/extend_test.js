@@ -42,7 +42,6 @@ suite('scheduler (extend)', function() {
             "scopes":           [],
             "routes":           [],
             "retries":          3,
-            "priority":         5,
             "created":          created.toJSON(),
             "deadline":         deadline.toJSON(),
             "payload": {
@@ -71,7 +70,6 @@ suite('scheduler (extend)', function() {
             "scopes":           [],
             "routes":           [],
             "retries":          3,
-            "priority":         5,
             "created":          created.toJSON(),
             "deadline":         deadline.toJSON(),
             "payload": {

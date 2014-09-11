@@ -14,7 +14,6 @@
         "routes":           [],
         "scopes":           [],
         "retries":          3,
-        "priority":         5,
         "created":          "2014-03-01T22:19:32.124Z",
         "deadline":         "2060-03-01T22:19:32.124Z",
         "payload": {
@@ -51,7 +50,6 @@
         "routes":           [],
         "scopes":           [],
         "retries":          3,
-        "priority":         5,
         "created":          "2014-03-01T22:19:32.124Z",
         "deadline":         "2060-03-01T22:19:32.124Z",
         "payload": {
