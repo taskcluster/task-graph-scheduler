@@ -18,6 +18,8 @@ var helpers     = require('./helpers');
  *   schedulerId:        // scheduler identifier
  *   connectionString:   // AMQP connection string
  *   queueName:          // Queue name (optional)
+ *   drain:              // new base.Influx(...)
+ *   component:          // Component name in statistics
  * }
  */
 var Handlers = function(options) {
@@ -32,6 +34,8 @@ var Handlers = function(options) {
          "An instance of taskcluster.QueueEvents is required");
   assert(options.connectionString, "Connection string must be provided");
   assert(options.schedulerId,      "SchedulerId is required");
+  assert(options.drain,             "statistics drains is required");
+  assert(options.component,         "component name is needed for statistics");
   // Store options on this for use in event handlers
   this.Task             = options.Task;
   this.TaskGraph        = options.TaskGraph;
@@ -41,6 +45,8 @@ var Handlers = function(options) {
   this.schedulerId      = options.schedulerId;
   this.connectionString = options.connectionString;
   this.queueName        = options.queueName;  // Optional
+  this.drain            = options.drain;
+  this.component        = options.component;
   this.listener         = null;
 };
 
@@ -67,8 +73,8 @@ Handlers.prototype.setup = function() {
   });
   this.listener.bind(failedBinding);
 
-  // Listen for messages and handle them
-  this.listener.on('message', function(message) {
+  // Create handler
+  var handler = function(message) {
     if (message.exchange === completedBinding.exchange) {
       return that.completed(message);
     }
@@ -79,7 +85,16 @@ Handlers.prototype.setup = function() {
           message.exchange, message);
     throw new Error("Got message from unexpected exchange: " +
                     message.exchange);
+  };
+
+  // Create timed handler for statistics
+  var timedHandler = base.stats.createHandlerTimer(handler, {
+    drain:      this.drain,
+    component:  this.component
   });
+
+  // Listen for messages and handle them
+  this.listener.on('message', timedHandler);
 
   // Start listening
   return this.listener.connect().then(function() {

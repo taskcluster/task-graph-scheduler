@@ -30,6 +30,20 @@ var launch = function(profile) {
     filename:     'task-graph-scheduler'
   });
 
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('scheduler:statsComponent'),
+    process:    'server'
+  });
+
   // Configure Task and TaskGraph entities
   var Task = data.Task.configure({
     schedulerId:      cfg.get('scheduler:schedulerId'),
@@ -63,7 +77,10 @@ var launch = function(profile) {
       validator:          validator,
       referencePrefix:    'scheduler/v1/exchanges.json',
       publish:            cfg.get('scheduler:publishMetaData') === 'true',
-      aws:                cfg.get('aws')
+      aws:                cfg.get('aws'),
+      drain:              influx,
+      component:          cfg.get('scheduler:statsComponent'),
+      process:            'server'
     });
   }).then(function(publisher_) {
     publisher = publisher_;
@@ -73,20 +90,6 @@ var launch = function(profile) {
   var queue = new taskcluster.Queue({
     baseUrl:        cfg.get('taskcluster:queueBaseUrl'),
     credentials:    cfg.get('taskcluster:credentials')
-  });
-
-  // Create InfluxDB connection for submitting statistics
-  var influx = new base.stats.Influx({
-    connectionString:   cfg.get('influx:connectionString'),
-    maxDelay:           cfg.get('influx:maxDelay'),
-    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-  });
-
-  // Start monitoring the process
-  base.stats.startProcessUsageReporting({
-    drain:      influx,
-    component:  cfg.get('scheduler:statsComponent'),
-    process:    'server'
   });
 
   // When: publisher, schema and validator is created, proceed

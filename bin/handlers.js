@@ -74,6 +74,9 @@ var launch = function(profile) {
       exchangePrefix:     cfg.get('scheduler:exchangePrefix'),
       validator:          validator,
       referencePrefix:    'scheduler/v1/exchanges.json',
+      drain:              influx,
+      component:          cfg.get('scheduler:statsComponent'),
+      process:            'handlers'
     });
   }).then(function(publisher_) {
     publisher = publisher_;
@@ -99,7 +102,9 @@ var launch = function(profile) {
       queueEvents:        queueEvents,
       schedulerId:        cfg.get('scheduler:schedulerId'),
       connectionString:   cfg.get('amqp:url'),
-      queueName:          cfg.get('scheduler:listenerQueueName')
+      queueName:          cfg.get('scheduler:listenerQueueName'),
+      drain:              influx,
+      component:          cfg.get('scheduler:statsComponent'),
     });
 
     // Start listening for events and handle them
