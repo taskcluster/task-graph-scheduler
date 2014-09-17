@@ -42,10 +42,10 @@ suite('data', function() {
   test('Task.loadGraphTasks', function() {
     var taskGraphId = slugid.v4();
 
-    return Promise.all(
+    return Promise.all([
       Task.createTable(),
       TaskGraph.createTable()
-    ).then(function() {
+    ]).then(function() {
       // Create taskGraph
       var tgCreated = TaskGraph.create({
         taskGraphId:        taskGraphId,
@@ -100,11 +100,11 @@ suite('data', function() {
 
       // When all is created, test that we load only two (taskA and taskB) using
       // loadGraphTasks
-      return Promise.all(
+      return Promise.all([
         tgCreated,
         taCreated,
         tbCreated
-      ).then(function() {
+      ]).then(function() {
         return Task.loadGraphTasks(taskGraphId);
       }).then(function(tasks) {
         assert(tasks.length === 2, "Expected two tasks in the task-graph");

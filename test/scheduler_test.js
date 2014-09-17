@@ -230,7 +230,7 @@ suite('scheduler (task-graph)', function() {
 
       debug("### Waiting task-graph running and taskA pending");
       // Wait for messages that we are expecting
-      return Promise.all(taskGraphRunning, taskAPending);
+      return Promise.all([taskGraphRunning, taskAPending]);
     }).then(function() {
       // Claim taskA
       debug("### Claim task A");

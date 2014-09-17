@@ -105,7 +105,7 @@ suite('scheduler (rerun)', function() {
 
       debug("### Waiting task-graph running and task pending");
       // Wait for messages that we are expecting
-      return Promise.all(taskGraphRunning, taskPending);
+      return Promise.all([taskGraphRunning, taskPending]);
     }).then(function() {
       // Claim task
       debug("### Claim task");
@@ -185,7 +185,7 @@ suite('scheduler (rerun)', function() {
 
       debug("### Waiting task-graph running and task pending");
       // Wait for messages that we are expecting
-      return Promise.all(taskGraphRunning, taskPending);
+      return Promise.all([taskGraphRunning, taskPending]);
     }).then(function() {
       // Claim task
       debug("### Claim task");

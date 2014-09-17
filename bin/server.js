@@ -90,11 +90,11 @@ var launch = function(profile) {
   });
 
   // When: publisher, schema and validator is created, proceed
-  return Promise.all(
+  return Promise.all([
     publisherCreated,
     Task.createTable(),
     TaskGraph.createTable()
-  ).then(function() {
+  ]).then(function() {
     // Create API router and publish reference if needed
     return v1.setup({
       context: {

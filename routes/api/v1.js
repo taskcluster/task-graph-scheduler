@@ -256,10 +256,10 @@ api.declare({
   var existingTasks   = null;
   var existingTaskIds = null;
   var queue           = null;
-  var gotTaskGraph = Promise.all(
+  var gotTaskGraph = Promise.all([
     ctx.TaskGraph.load(taskGraphId),
     ctx.Task.loadGraphTasks(taskGraphId)
-  ).then(function(values) {
+  ]).then(function(values) {
     taskGraph       = values.shift();
     existingTasks   = values.shift();
     existingTaskIds = existingTasks.map(function(task) {
@@ -439,10 +439,10 @@ api.declare({
   var taskGraphId = req.params.taskGraphId;
 
   // Load task-graph and all tasks
-  return Promise.all(
-    this.TaskGraph.load(taskGraphId),
-    this.Task.loadGraphTasks(taskGraphId)
-  ).then(function(values) {
+  return Promise.all([
+      this.TaskGraph.load(taskGraphId),
+      this.Task.loadGraphTasks(taskGraphId)
+  ]).then(function(values) {
     var taskGraph = values.shift();
     var tasks     = values.shift();
 
