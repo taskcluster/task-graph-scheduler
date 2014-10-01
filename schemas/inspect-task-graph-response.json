@@ -93,6 +93,7 @@
         "additionalProperties":   false,
         "required": [
           "taskId",
+          "name",
           "requires",
           "requiresLeft",
           "reruns",
