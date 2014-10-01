@@ -21,6 +21,12 @@
             "description":    "Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
             "pattern":        {"$const": "slugid-pattern"}
           },
+          "name": {
+            "type":           "string",
+            "title":          "Name",
+            "description":    "Human readable name from the task definition",
+            "maxLength":      255
+          },
           "requires": {
             "title":            "Required tasks",
             "description":      "List of required `taskId`s",
@@ -84,6 +90,7 @@
             }
           }
         },
+        "additionalProperties":   false,
         "required": [
           "taskId",
           "requires",
