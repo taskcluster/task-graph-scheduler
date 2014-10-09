@@ -89,23 +89,31 @@ suite('scheduler (rerun)', function() {
     var binding = subject.schedulerEvents.taskGraphFinished({
       taskGraphId:    taskGraphId
     });
-    var taskGraphFinished = subject.listenFor(binding).then(function() {
+    var taskGraphFinished = subject.listenFor(binding);
+    taskGraphFinished.message = taskGraphFinished.message.then(function() {
       // Check that we're not completed too soon
       assert(taskGraphCanFinishNow, "taskGraph finished too soon!!!");
     });
 
-    // Submit taskgraph to scheduler
-    debug("### Posting task-graph");
-    return subject.scheduler.createTaskGraph(
-      taskGraphId,
-      taskGraph
-    ).then(function(result) {
+    // Wait till we're listening
+    return Promise.all([
+      taskGraphRunning.ready,
+      taskPending.ready,
+      taskGraphFinished.ready
+    ]).then(function() {
+      // Submit taskgraph to scheduler
+      debug("### Posting task-graph");
+      return subject.scheduler.createTaskGraph(
+        taskGraphId,
+        taskGraph
+      );
+    }).then(function(result) {
       assert(result.status.taskGraphId === taskGraphId,
              "Didn't get taskGraphId");
 
       debug("### Waiting task-graph running and task pending");
       // Wait for messages that we are expecting
-      return Promise.all([taskGraphRunning, taskPending]);
+      return Promise.all([taskGraphRunning.message, taskPending.message]);
     }).then(function() {
       // Claim task
       debug("### Claim task");
@@ -120,13 +128,15 @@ suite('scheduler (rerun)', function() {
       taskPending = subject.listenFor(subject.queueEvents.taskPending({
         taskId:   taskId
       }));
-      debug("### Report task completed (unsuccessfully)");
-      return subject.queue.reportCompleted(taskId, 0, {
-        success: false
+      return taskPending.ready.then(function() {
+        debug("### Report task completed (unsuccessfully)");
+        return subject.queue.reportCompleted(taskId, 0, {
+          success: false
+        }).then(function() {
+          debug("### Wait for task to become pending again");
+          return taskPending.message;
+        });
       });
-    }).then(function() {
-      debug("### Wait for task to become pending again");
-      return taskPending;
     }).then(function() {
       // Claim task
       debug("### Claim task (again)");
@@ -144,7 +154,7 @@ suite('scheduler (rerun)', function() {
       });
     }).then(function() {
       debug("### Waiting for task-graph to be finished");
-      return taskGraphFinished;
+      return taskGraphFinished.message;
     });
   });
 
@@ -169,23 +179,31 @@ suite('scheduler (rerun)', function() {
     var binding = subject.schedulerEvents.taskGraphBlocked({
       taskGraphId:    taskGraphId
     });
-    var taskGraphBlocked = subject.listenFor(binding).then(function() {
+    var taskGraphBlocked = subject.listenFor(binding);
+    taskGraphBlocked.message = taskGraphBlocked.message.then(function() {
       // Check that we're not completed too soon
       assert(taskGraphCanBlockNow, "taskGraph blocked too soon!!!");
     });
 
-    // Submit taskgraph to scheduler
-    debug("### Posting task-graph");
-    return subject.scheduler.createTaskGraph(
-      taskGraphId,
-      taskGraph
-    ).then(function(result) {
+    // Wait till we're listening
+    return Promise.all([
+      taskGraphRunning.ready,
+      taskPending.ready,
+      taskGraphBlocked.ready
+    ]).then(function() {
+      // Submit taskgraph to scheduler
+      debug("### Posting task-graph");
+      return subject.scheduler.createTaskGraph(
+        taskGraphId,
+        taskGraph
+      );
+    }).then(function(result) {
       assert(result.status.taskGraphId === taskGraphId,
              "Didn't get taskGraphId");
 
       debug("### Waiting task-graph running and task pending");
       // Wait for messages that we are expecting
-      return Promise.all([taskGraphRunning, taskPending]);
+      return Promise.all([taskGraphRunning.message, taskPending.message]);
     }).then(function() {
       // Claim task
       debug("### Claim task");
@@ -200,13 +218,15 @@ suite('scheduler (rerun)', function() {
       taskPending = subject.listenFor(subject.queueEvents.taskPending({
         taskId:   taskId
       }));
-      debug("### Report task completed (unsuccessfully)");
-      return subject.queue.reportCompleted(taskId, 0, {
-        success: false
+      return taskPending.ready.then(function() {
+        debug("### Report task completed (unsuccessfully)");
+        return subject.queue.reportCompleted(taskId, 0, {
+          success: false
+        }).then(function() {
+          debug("### Wait for task to become pending again");
+          return taskPending.message;
+        });
       });
-    }).then(function() {
-      debug("### Wait for task to become pending again");
-      return taskPending;
     }).then(function() {
       // Claim task
       debug("### Claim task (again)");
@@ -224,7 +244,7 @@ suite('scheduler (rerun)', function() {
       });
     }).then(function() {
       debug("### Waiting for task-graph to be blocked");
-      return taskGraphBlocked;
+      return taskGraphBlocked.message;
     });
   });
 });

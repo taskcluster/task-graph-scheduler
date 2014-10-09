@@ -119,23 +119,31 @@ suite('scheduler (inspect)', function() {
     var taskBCanBeScheduled = false;
     var taskBPending = subject.listenFor(subject.queueEvents.taskPending({
       taskId:   taskIdB
-    })).then(function(message) {
+    }));
+    taskBPending.message = taskBPending.message.then(function(message) {
       // Check that we're not scheduling taskB too soon
       assert(taskBCanBeScheduled, "taskB was scheduled too soon!!!");
     });
 
-    // Submit taskgraph to scheduler
-    debug("### Posting task-graph");
-    return subject.scheduler.createTaskGraph(
-      taskGraphId,
-      taskGraph
-    ).then(function(result) {
+    // Start listening
+    return Promise.all([
+      taskGraphRunning.ready,
+      taskAPending.ready,
+      taskBPending.ready
+    ]).then(function() {
+      // Submit taskgraph to scheduler
+      debug("### Posting task-graph");
+      return subject.scheduler.createTaskGraph(taskGraphId, taskGraph);
+    }).then(function(result) {
       assert(result.status.taskGraphId === taskGraphId,
              "Didn't get taskGraphId");
 
       debug("### Waiting task-graph running and taskA pending");
       // Wait for messages that we are expecting
-      return Promise.all([taskGraphRunning, taskAPending]);
+      return Promise.all([
+        taskGraphRunning.message,
+        taskAPending.message
+      ]);
     }).then(function() {
       // Claim taskA
       debug("### Claim task A");
@@ -153,7 +161,7 @@ suite('scheduler (inspect)', function() {
       });
     }).then(function() {
       debug("### Waiting for taskB to become pending");
-      return taskBPending;
+      return taskBPending.message;
     }).then(function() {
       return subject.scheduler.status(taskGraphId);
     }).then(function(result) {
