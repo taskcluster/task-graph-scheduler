@@ -115,7 +115,7 @@ exports.setup = function(options) {
     };
     // Create mock authentication server
     return base.testing.createMockAuthServer({
-      port:     1210, // This is hardcoded into config/test.js
+      port:     60072, // This is hardcoded into config/test.js
       clients:  defaultClients
     }).then(function(mockAuthServer_) {
       mockAuthServer = mockAuthServer_;

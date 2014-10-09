@@ -12,7 +12,7 @@ module.exports = {
   },
 
   taskcluster: {
-    authBaseUrl:                  'http://localhost:1210/v1',
+    authBaseUrl:                  'http://localhost:60072/v1',
     credentials: {
       clientId:                   undefined,
       accessToken:                undefined
@@ -20,8 +20,8 @@ module.exports = {
   },
 
   server: {
-    publicUrl:                    'http://localhost:1209',
-    port:                         1209
+    publicUrl:                    'http://localhost:60071',
+    port:                         60071
   },
 
   amqp: {
