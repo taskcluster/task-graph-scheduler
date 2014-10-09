@@ -56,7 +56,7 @@ Handlers.prototype.setup = function() {
   var that = this;
 
   // Create listener
-  this.listener = new taskcluster.Listener({
+  this.listener = new taskcluster.AMQPListener({
     connectionString:     this.connectionString,
     queueName:            this.queueName
   });
