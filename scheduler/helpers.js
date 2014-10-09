@@ -154,6 +154,9 @@ exports.prepareTasks = function(input, options) {
       return taskNode.taskId;
     });
 
+    // Decide if this is a leaf node
+    var isLeaf = (taskNode.requires.length === 0);
+
     // Construct JSON for Task.create()
     return {
       taskGraphId:      options.taskGraphId,
@@ -165,7 +168,7 @@ exports.prepareTasks = function(input, options) {
       requires:         _.cloneDeep(taskNode.requires),
       requiresLeft:     _.cloneDeep(taskNode.requires),
       dependents:       dependents,
-      state:            'unscheduled',
+      state:            isLeaf ? 'scheduled' : 'unscheduled',
       details:          {
         name:           taskNode.task.metadata.name,
         satisfied:      false
@@ -269,6 +272,8 @@ exports.scheduleDependentTasks = function(task, queue, Task) {
 
           // Note, that on the queue this is an idempotent operation, so it is
           // not a problem if we do this more than once.
+          debug("scheduling %s for graph: %s",
+                dependentTaskId, task.taskGraphId);
           return queue.scheduleTask(dependentTaskId).catch(function(err) {
             debug("Failed to schedule task: %s", dependentTaskId);
             throw err;

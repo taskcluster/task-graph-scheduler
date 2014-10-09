@@ -48,7 +48,7 @@ suite('scheduler (inspect)', function() {
               "desiredResolution":  "success"
             },
             "metadata": {
-              "name":           "Print `'Hello World'` Once",
+              "name":           "A: Print `'Hello World'` Once",
               "description":    "This task will prìnt `'Hello World'` **once**!",
               "owner":          "jojensen@mozilla.com",
               "source":         "https://github.com/taskcluster/task-graph-scheduler"
@@ -76,7 +76,7 @@ suite('scheduler (inspect)', function() {
               "desiredResolution":  "success"
             },
             "metadata": {
-              "name":           "Print `'Hello World'` Again",
+              "name":           "B: Print `'Hello World'` Again",
               "description":    "This task will prìnt `'Hello World'` **again**! " +
                                 "and wait for " + taskIdA + ".",
               "owner":          "jojensen@mozilla.com",
@@ -145,6 +145,22 @@ suite('scheduler (inspect)', function() {
         taskAPending.message
       ]);
     }).then(function() {
+      return subject.scheduler.inspect(taskGraphId);
+    }).then(function(result) {
+      assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
+      assert(result.tags.MyTestTag == "Hello World",    "Got tag");
+      assert(result.status.state == 'running',          "got right state");
+      assert(result.tasks.length == 2,                  "got tasks");
+      result.tasks.forEach(function(task) {
+        if (task.taskId === taskIdA) {
+          assert(task.state === 'scheduled', "expected taskA to be scheduled");
+        }
+        if (task.taskId === taskIdB) {
+          assert(task.state === 'unscheduled',
+                 "expected taskB to be unscheduled");
+        }
+      });
+    }).then(function() {
       // Claim taskA
       debug("### Claim task A");
       return subject.queue.claimTask(taskIdA, 0, {
@@ -180,6 +196,14 @@ suite('scheduler (inspect)', function() {
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
       assert(result.status.state == 'running',          "got right state");
       assert(result.tasks.length == 2,                  "got tasks");
+      result.tasks.forEach(function(task) {
+        if (task.taskId === taskIdA) {
+          assert(task.state === 'completed', "expected taskA to be completed");
+        }
+        if (task.taskId === taskIdB) {
+          assert(task.state === 'scheduled', "expected taskB to be scheduled");
+        }
+      });
     });
   });
 });
