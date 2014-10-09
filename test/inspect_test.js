@@ -101,8 +101,6 @@ suite('scheduler (inspect)', function() {
   };
 
   test("Schedule a task-graph, run task and inspect", function() {
-    this.timeout(120 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
 

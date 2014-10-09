@@ -101,8 +101,6 @@ suite('scheduler (extend)', function() {
   };
 
   test("Schedule a task-graph and extend task-graph", function() {
-    this.timeout(120 * 1000);
-
     // Make task graph
     var taskGraph = makeTaskGraph();
 
