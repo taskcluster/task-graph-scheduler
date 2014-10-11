@@ -2,7 +2,6 @@ suite('scheduler (extend)', function() {
   var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('scheduler:test:scheduler_test');
-  var helper      = require('./helper');
   var slugid      = require('slugid');
   var _           = require('lodash');
   var helper      = require('./helper');

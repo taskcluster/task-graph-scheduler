@@ -480,7 +480,7 @@ api.declare({
     "**Warning** this api end-point is **not stable**."
   ].join('\n')
 }, function(req, res) {
-  res.json(200, {
+  res.status(200).json({
     alive:    true,
     uptime:   process.uptime()
   });
