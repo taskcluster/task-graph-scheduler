@@ -9,6 +9,12 @@ module.exports = {
     listenerQueueName:            'task-graph-scheduler/event-queue'
   },
 
+  pulse: {
+    username:                       'taskcluster-scheduler',
+    // Provided by environment variable
+    password:                       undefined
+  },
+
   server: {
     publicUrl:                      'https://scheduler.taskcluster.net',
     port:                           80,

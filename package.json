@@ -14,7 +14,7 @@
     "promise":                          "6.0.0",
     "lodash":                           "2.4.1",
     "debug":                            "2.0.0",
-    "taskcluster-client":               "0.17.0",
+    "taskcluster-client":               "0.17.3",
     "taskcluster-base":                 "0.6.0",
     "azure-table-node":                 "1.4.1"
   },

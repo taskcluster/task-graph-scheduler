@@ -20,7 +20,8 @@ var launch = function(profile) {
       'taskcluster_authBaseUrl',
       'taskcluster_credentials_clientId',
       'taskcluster_credentials_accessToken',
-      'amqp_url',
+      'pulse_username',
+      'pulse_password',
       'aws_accessKeyId',
       'aws_secretAccessKey',
       'azure_accountName',
@@ -72,7 +73,7 @@ var launch = function(profile) {
   }).then(function(validator_) {
     validator = validator_;
     return exchanges.setup({
-      connectionString:   cfg.get('amqp:url'),
+      credentials:        cfg.get('pulse'),
       exchangePrefix:     cfg.get('scheduler:exchangePrefix'),
       validator:          validator,
       referencePrefix:    'scheduler/v1/exchanges.json',

@@ -75,10 +75,10 @@ module.exports = {
   },
 
 
-  // AMQP configuration
-  amqp: {
-    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            undefined
+  // Pulse credentials
+  pulse: {
+    username:                       undefined,
+    password:                       undefined
   },
 
   // Azure credentials (usually configured using environment variables)

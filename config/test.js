@@ -24,8 +24,9 @@ module.exports = {
     port:                         60071
   },
 
-  amqp: {
-    url:                          undefined
+  pulse: {
+    username:                       undefined,
+    password:                       undefined
   },
 
   aws: {
