@@ -144,9 +144,10 @@ exchanges.declare({
   name:               'taskGraphExtended',
   title:              "Task-Graph Extended Message",
   description: [
-    "When a task-graph is submitted it immediately starts running and a",
-    "message is posted on this exchange to indicate that a task-graph have",
-    "been submitted."
+    "When a task-graph is extended, that is additional tasks is added to the",
+    "task-graph, a message is posted on this exchange. This is useful if you",
+    "are monitoring a task-graph and what to track states of the individual",
+    "tasks in the task-graph."
   ].join('\n'),
   routingKey:         commonRoutingKey,
   schema:             SCHEMA_PREFIX_CONST + 'task-graph-extended-message.json#',

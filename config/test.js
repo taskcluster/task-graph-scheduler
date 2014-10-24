@@ -6,7 +6,7 @@ module.exports = {
 
     publishMetaData:              'false',
 
-    exchangePrefix:               'dummy-test-scheduler/scheduler/v1/',
+    exchangePrefix:               'dummy-test-scheduler/',
 
     listenerQueueName:            undefined,
   },

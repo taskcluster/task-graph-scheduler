@@ -14,7 +14,7 @@ module.exports = {
     publishMetaData:              'false',
 
     // Prefix for exchanges declared
-    exchangePrefix:               'scheduler/v1/',
+    exchangePrefix:               'v1/',
 
     // Name of AMQP queue, if a non-exclusive queue is to be used.
     listenerQueueName:            undefined,
