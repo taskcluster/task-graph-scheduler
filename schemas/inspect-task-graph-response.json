@@ -70,7 +70,8 @@
               "unscheduled",
               "scheduled",
               "completed",
-              "failed"
+              "failed",
+              "exception"
             ]
           },
           "satisfied": {

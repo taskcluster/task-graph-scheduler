@@ -144,9 +144,12 @@ exports.setup = function(options) {
 
         // Create queueEvents and Queue client
         subject.queue = new taskcluster.Queue({
-          credentials: cfg.get('taskcluster:credentials')
+          baseUrl:          cfg.get('taskcluster:queueBaseUrl'),
+          credentials:      cfg.get('taskcluster:credentials')
         });
-        subject.queueEvents = new taskcluster.QueueEvents();
+        subject.queueEvents = new taskcluster.QueueEvents({
+          exchangePrefix:   cfg.get('taskcluster:queueExchangePrefix')
+        });
       });
 
       return Promise.all([serverLaunched, handlers.launch()]);

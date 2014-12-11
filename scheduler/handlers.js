@@ -78,6 +78,12 @@ Handlers.prototype.setup = function() {
   });
   this.listener.bind(failedBinding);
 
+  // Binding for task exceptions
+  var exceptionBinding = this.queueEvents.taskException({
+    schedulerId:    this.schedulerId
+  });
+  this.listener.bind(exceptionBinding);
+
   // Create handler
   var handler = function(message) {
     if (message.exchange === completedBinding.exchange) {
@@ -85,6 +91,9 @@ Handlers.prototype.setup = function() {
     }
     if (message.exchange === failedBinding.exchange) {
       return that.failed(message);
+    }
+    if (message.exchange === exceptionBinding.exchange) {
+      return that.exception(message);
     }
     debug("WARNING: received message from unexpected exchange: %s, message: %j",
           message.exchange, message);
@@ -220,8 +229,8 @@ Handlers.prototype.rerunTaskOrBlock = function(task, message) {
 };
 
 
-/** Handle notifications of failed messages */
-Handlers.prototype.failed = function(message) {
+/** Handle notifications of task exception messages */
+Handlers.prototype.exception = function(message) {
   var that = this;
   // Extract the taskGraphId from the routing key
   var taskGraphId     = message.routing.taskGroupId;
@@ -234,7 +243,7 @@ Handlers.prototype.failed = function(message) {
   // When modify the task state and satisfied
   var task_modified = task_loaded.then(function(task) {
     return task.modify(function() {
-      this.state = 'failed';
+      this.state = 'exception';
       this.details.satisfied = false;
     });
   });
@@ -262,29 +271,42 @@ Handlers.prototype.completed = function(message) {
 
   // When task entity is loaded we modify the task state and satisfied
   return task_loaded.then(function(task) {
-    if (message.payload.success) {
-      var task_modified = task.modify(function() {
-        this.state = 'completed';
-        this.details.satisfied = true;
-      });
+    var task_modified = task.modify(function() {
+      this.state = 'completed';
+      this.details.satisfied = true;
+    });
 
-      // When state and details has been saved,
-      return task_modified.then(function() {
-        if (task.dependents.length != 0) {
-          // There are dependent tasks, when we should try to schedule those
-          debug("Scheduling dependent tasks");
-          return helpers.scheduleDependentTasks(task, that.queue, that.Task);
-        } else {
-          // If there is no dependent tasks then we should check if the task-
-          // graph is finished
-          debug("Checking if task graph has finished");
-          return that.checkTaskGraphFinished(taskGraphId, task.taskId);
-        }
-      });
-    } else {
-      debug("Requesting a task to be rerun if possible");
-      return that.rerunTaskOrBlock(task, message);
-    }
+    // When state and details has been saved,
+    return task_modified.then(function() {
+      if (task.dependents.length != 0) {
+        // There are dependent tasks, when we should try to schedule those
+        debug("Scheduling dependent tasks");
+        return helpers.scheduleDependentTasks(task, that.queue, that.Task);
+      } else {
+        // If there is no dependent tasks then we should check if the task-
+        // graph is finished
+        debug("Checking if task graph has finished");
+        return that.checkTaskGraphFinished(taskGraphId, task.taskId);
+      }
+    });
+  });
+};
+
+/** Handle notifications of failed messages */
+Handlers.prototype.failed = function(message) {
+  var that = this;
+  // Extract the taskGraphId from the routing key
+  var taskGraphId     = message.routing.taskGroupId;
+  var failedTaskId    = message.payload.status.taskId;
+  debug("Got message that taskId: %s failed", failedTaskId);
+
+  // Load the completed task
+  var task_loaded = this.Task.load(taskGraphId, failedTaskId);
+
+  // When task entity is loaded we modify the task state and satisfied
+  return task_loaded.then(function(task) {
+    debug("Requesting a task to be rerun if possible");
+    return that.rerunTaskOrBlock(task, message);
   });
 };
 
