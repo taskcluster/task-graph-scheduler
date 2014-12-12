@@ -178,6 +178,10 @@ suite('scheduler (inspect)', function() {
       debug("### Waiting for taskB to become pending");
       return taskBPending.message;
     }).then(function() {
+      // Even when we have the pending message, it's not a given that the
+      // handler have managed to save the task state in the task-graph.
+      return helper.sleep(2000);
+    }).then(function() {
       return subject.scheduler.status(taskGraphId);
     }).then(function(result) {
       assert(result.status.taskGraphId == taskGraphId,  "got taskGraphId");
@@ -197,9 +201,11 @@ suite('scheduler (inspect)', function() {
       assert(result.tasks.length == 2,                  "got tasks");
       result.tasks.forEach(function(task) {
         if (task.taskId === taskIdA) {
+          debug("taskA: %j", task);
           assert(task.state === 'completed', "expected taskA to be completed");
         }
         if (task.taskId === taskIdB) {
+          debug("taskB: %j", task);
           assert(task.state === 'scheduled', "expected taskB to be scheduled");
         }
       });
