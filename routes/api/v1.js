@@ -468,6 +468,54 @@ api.declare({
   });
 });
 
+
+/** Get inspect a task from a task-graph */
+api.declare({
+  method:     'get',
+  route:      '/task-graph/:taskGraphId/inspect/:taskId',
+  name:       'inspectTask',
+  input:      undefined,
+  output:     SCHEMA_PREFIX_CONST + 'inspect-task-graph-task-response.json',
+  title:      "Inspect Task from a Task-Graph",
+  description: [
+    "Inspect a task from a task-graph, this returns all the information the",
+    "task-graph scheduler knows about the specific task.",
+    "",
+    "**Warning**, some of these fields are borderline internal to the",
+    "task-graph scheduler and we may choose to change or make them internal",
+    "later. Also note that note all of the information is formalized yet.",
+    "The JSON schema will be updated to reflect formalized values, we think",
+    "it's safe to consider the values stable.",
+    "",
+    "Take these considerations into account when using the API end-point,",
+    "as we do not promise it will remain fully backward compatible in",
+    "the future.",
+  ].join('\n')
+}, function(req, res) {
+  // Find task-graph id
+  var taskGraphId = req.params.taskGraphId;
+  var taskId      = req.params.taskId;
+
+  return this.Task.load(taskGraphId, taskId).then(function(task) {
+    return res.reply({
+      taskId:       task.taskId,
+      name:         task.details.name,
+      requires:     task.requires,
+      requiresLeft: task.requiresLeft,
+      reruns:       task.rerunsAllowed,
+      rerunsLeft:   task.rerunsLeft,
+      state:        task.state,
+      satisfied:    task.details.satisfied,
+      dependents:   task.dependents
+    });
+  });
+});
+
+
+
+
+
+
 /** Check that the server is a alive */
 api.declare({
   method:   'get',
