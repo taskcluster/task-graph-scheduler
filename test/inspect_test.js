@@ -209,6 +209,10 @@ suite('scheduler (inspect)', function() {
           assert(task.state === 'scheduled', "expected taskB to be scheduled");
         }
       });
+      return subject.scheduler.inspectTask(taskGraphId, taskIdA);
+    }).then(function(task) {
+      assert(task.taskId === taskIdA, "Expected taskIdA");
+      assert(task.state === 'completed', "expected taskA to be completed");
     });
   });
 });

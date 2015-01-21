@@ -1,0 +1,96 @@
+{
+  "id":           "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json#",
+  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "title":        "Inspect Task-Graph Task Response",
+  "description":  "Information about a **task** in a task-graph as known by the scheduler.",
+  "type":               "object",
+  "properties": {
+    "taskId":             {
+      "type":           "string",
+      "title":          "Task Identifier",
+      "description":    "Unique task identifier, this is UUID encoded as [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and stripped of `=` padding.",
+      "pattern":        {"$const": "slugid-pattern"}
+    },
+    "name": {
+      "type":           "string",
+      "title":          "Name",
+      "description":    "Human readable name from the task definition",
+      "maxLength":      255
+    },
+    "requires": {
+      "title":            "Required tasks",
+      "description":      "List of required `taskId`s",
+      "type":             "array",
+      "items": {
+        "title":          "Required `taskId`",
+        "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
+        "type":           "string",
+        "pattern":        {"$const": "slugid-pattern"}
+      }
+    },
+    "requiresLeft": {
+      "title":            "Required tasks left",
+      "description":      "List of `taskId`s that have yet to complete successfully, before this task can be scheduled.",
+      "type":             "array",
+      "items": {
+        "title":          "Required `taskId`",
+        "description":    "`taskId` for task that is required to be _successfully completed_ before this task is scheduled.",
+        "type":           "string",
+        "pattern":        {"$const": "slugid-pattern"}
+      }
+    },
+    "reruns": {
+      "title":            "Re-runs",
+      "description":      "Number of times to _rerun_ the task if it completed unsuccessfully. **Note**, this does not capture _retries_ due to infrastructure issues.",
+      "type":             "integer",
+      "minimum":          0,
+      "maximum":          999
+    },
+    "rerunsLeft": {
+      "title":            "Re-runs Left",
+      "description":      "Number of reruns that haven't been used yet.",
+      "type":             "integer",
+      "minimum":          0,
+      "maximum":          999
+    },
+    "state": {
+      "title":            "Task Node State",
+      "description":      "State of the task as considered by the scheduler",
+      "enum": [
+        "unscheduled",
+        "scheduled",
+        "completed",
+        "failed",
+        "exception"
+      ]
+    },
+    "satisfied": {
+      "title":            "Task Satisfied",
+      "description":      "true, if the scheduler considers the task node as satisfied and hence no-longer prevents dependent tasks from running.",
+      "type":             "boolean"
+    },
+    "dependents": {
+      "title":            "Dependent tasks",
+      "description":      "List of `taskId`s that requires this task to be _complete successfully_ before they can be scheduled.",
+      "type":             "array",
+      "items": {
+        "title":          "Dependent `taskId`",
+        "description":    "`taskId` for task that requires this task to be _successfully completed_ before it can be scheduled.",
+        "type":           "string",
+        "pattern":        {"$const": "slugid-pattern"}
+      }
+    }
+  },
+  "additionalProperties":   false,
+  "required": [
+    "taskId",
+    "name",
+    "requires",
+    "requiresLeft",
+    "reruns",
+    "rerunsLeft",
+    "state",
+    "satisfied",
+    "dependents"
+  ]
+}
