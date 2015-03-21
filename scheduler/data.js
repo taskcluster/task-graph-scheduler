@@ -1,46 +1,23 @@
 var base        = require('taskcluster-base');
 var assert      = require('assert');
 var Promise     = require('promise');
-var azureTable  = require('azure-table-node');
 
-/** Configure a taskgraph Entity subclass */
+/** Entity type for representation of a task-graph */
 var TaskGraph = base.Entity.configure({
-  mapping: [
-    {
-      key:              'PartitionKey',
-      property:         'taskGraphId',
-      type:             'string'
-    }, {
-      // This is always hardcoded to 'task-graph', so we can use the same table
-      // for both TaskGraph and Task entities. This ensures that we can make
-      // atomic operations should we ever need to do this.
-      key:              'RowKey',
-      type:             'string',
-      hidden:           true
-    },
-    {key: 'version',       type: 'number' },
-    {key: 'requires',      type: 'json'   },
-    {key: 'requiresLeft',  type: 'json'   },
-    {key: 'state',         type: 'string' },
-    {key: 'routes',        type: 'json'   },
-    {key: 'scopes',        type: 'json'   },
-    {key: 'details',       type: 'json'   }
-  ]
+  version:            1,
+  partitionKey:       base.Entity.StringKey('taskGraphId'),
+  rowKey:             base.Entity.ConstantKey('task-graph'),
+  properties: {
+    taskGraphId:      base.Entity.types.SlugId,
+    requires:         base.Entity.types.SlugIdArray,
+    requiresLeft:     base.Entity.types.SlugIdArray,
+    state:            base.Entity.types.String,
+    routes:           base.Entity.types.JSON,
+    scopes:           base.Entity.types.JSON,
+    details:          base.Entity.types.JSON
+  },
+  context:            ['schedulerId']
 });
-
-// RowKey constant, used as we don't need a RowKey
-var ROW_KEY_CONST = 'task-graph';
-
-/** Create a taskGraph */
-TaskGraph.create = function(properties) {
-  properties.RowKey = ROW_KEY_CONST;
-  return base.Entity.create.call(this, properties);
-};
-
-/** Load taskGraph from taskGraphId */
-TaskGraph.load = function(taskGraphId) {
-  return base.Entity.load.call(this, taskGraphId, ROW_KEY_CONST);
-};
 
 /** Get task-graph status structure */
 TaskGraph.prototype.status = function() {
@@ -52,14 +29,14 @@ TaskGraph.prototype.status = function() {
 };
 
 /**
- * Overwrite Entity.configure to support the additional configuration key
+ * Overwrite Entity.setup to support the additional configuration key
  * `schedulerId`, so that this can be configured dynamically.
  */
-TaskGraph.configure = function(options) {
+TaskGraph.setup = function(setup) {
   assert(options.schedulerId, "schedulerId must be given!");
 
   // Configure class as Entity.configure would
-  var Class = base.Entity.configure.call(this, options);
+  var Class = base.Entity.setup.call(this, options);
 
   // Add property schedulerId
   Class.prototype.schedulerId = options.schedulerId;
@@ -70,6 +47,27 @@ TaskGraph.configure = function(options) {
 
 // Export TaskGraph
 exports.TaskGraph = TaskGraph;
+
+/** Entity type of representation of a task within a task-graph */
+var Task = base.Entity.configure({
+  version:            1,
+  partitionKey:       base.Entity.StringKey('taskGraphId'),
+  rowKey:             base.Entity.StringKey('taskId'),
+  properties: {
+    taskGraphId:      base.Entity.types.SlugId,
+    taskId:           base.Entity.types.SlugId,
+    rerunsAllowed:    base.Entity.types.Number,
+    rerunsLeft:       base.Entity.types.Number,
+    deadline:         base.Entity.types.Date,
+    requires:         base.Entity.types.SlugIdArray,
+    requiresLeft:     base.Entity.types.SlugIdArray,
+    dependents:       base.Entity.types.SlugIdArray,
+    state:            base.Entity.types.String,
+    details:          base.Entity.types.JSON
+  }
+});
+
+
 
 
 
