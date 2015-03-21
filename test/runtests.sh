@@ -9,4 +9,5 @@ mocha                               \
   test/inspect_test.js              \
   test/rerun_test.js                \
   test/extend_test.js               \
+  test/idempotency_test.js          \
   ;

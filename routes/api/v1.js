@@ -187,10 +187,49 @@ api.declare({
         metadata:         result.input.metadata,
         tags:             result.input.tags
       }
+    }).catch(function(err) {
+      if (err.code !== 'EntityAlreadyExists') {
+        throw err;
+      }
+      // Compare if it already exists
+      debug("Loading %s to compare with existing", taskGraphId);
+      return ctx.TaskGraph.load(taskGraphId).then(function(taskGraph) {
+        if (taskGraph.version !== 1 ||
+          !_.isEqual(taskGraph.requires, requires) ||
+          taskGraph.state !== 'running' ||
+          !_.isEqual(taskGraph.routes, result.input.routes) ||
+          !_.isEqual(taskGraph.scopes, result.input.scopes) ||
+          !_.isEqual(taskGraph.details, {
+            metadata:         result.input.metadata,
+            tags:             result.input.tags
+          })) {
+          var err = new Error("Conflict with existing taskgraph");
+          err.code = 'TaskGraphIdConflict';
+          throw err;
+        }
+        return taskGraph;
+      });
     }).then(function(taskGraph) {
       // Create all task entities
       return Promise.all(result.tasks.map(function(task) {
-        return ctx.Task.create(task);
+        debug("Creating entity for taskId: %s", task.taskId);
+        return ctx.Task.create(task).catch(function(err) {
+          if (err.code !== 'EntityAlreadyExists') {
+            throw err;
+          }
+          return ctx.Task.load(taskGraphId, task.taskId).then(function(task2) {
+            if (task2.version !== 1 ||
+              task2.rerunsAllowed !== task.rerunsAllowed ||
+              task2.deadline.getTime() !== task.deadline.getTime() ||
+              !_.isEqual(task2.requires, task.requires) ||
+              !_.isEqual(task2.dependents, task.dependents)) {
+              var err = new Error("Conflict with existing task in taskGraph");
+              err.code = 'TaskIdConflict';
+              throw err;
+            }
+            return task2;
+          });
+        });
       })).then(function(tasks) {
         // Schedule initial tasks...
         return Promise.all(tasks.filter(function(task) {
@@ -208,6 +247,22 @@ api.declare({
           status:               taskGraph.status()
         });
       });
+    }).catch(function(err) {
+      if (err && err.code === 'TaskGraphIdConflict') {
+        return res.status(409).json({
+          message:  "Different TaskGraph with given taskGraphId already " +
+                    "exists, if this your attempt at an idempotent operation " +
+                    "then you've failed!"
+        });
+      }
+      if (err && err.code === 'TaskIdConflict') {
+        return res.status(409).json({
+          message:  "Different TaskId with given TaskId already " +
+                    "exists, if this your attempt at an idempotent operation " +
+                    "then you've failed!"
+        });
+      }
+      throw err;
     });
   });
 });
@@ -305,19 +360,35 @@ api.declare({
       return taskGraph.modify(function() {
         // Update requires, removing tasks that have dependents and adding new
         // required tasks
-        this.requires = _.intersection(
+        this.requires = _.union(_.intersection(
           this.requires,
           OldRequires
-        ).concat(newRequires);
+        ), newRequires);
 
         // Update requiresLeft the same way
-        this.requiresLeft = _.intersection(
+        this.requiresLeft = _.union(_.intersection(
           this.requiresLeft,
           OldRequires
-        ).concat(newRequires);
+        ), newRequires);
       }).then(function() {
         return Promise.all(result.tasks.map(function(task) {
-          return ctx.Task.create(task);
+          return ctx.Task.create(task).catch(function(err) {
+            if (err.code !== 'EntityAlreadyExists') {
+              throw err;
+            }
+            return ctx.Task.load(taskGraphId, task.taskId).then(function(t2) {
+              if (t2.version !== 1 ||
+                t2.rerunsAllowed !== task.rerunsAllowed ||
+                t2.deadline.getTime() !== task.deadline.getTime() ||
+                !_.isEqual(t2.requires, task.requires) ||
+                !_.isEqual(t2.dependents, task.dependents)) {
+                var err = new Error("Conflict with existing task in taskGraph");
+                err.code = 'TaskIdConflict';
+                throw err;
+              }
+              return t2;
+            });
+          });
         })).then(function(tasks) {
           // Schedule initial tasks...
           return Promise.all(tasks.filter(function(task) {
@@ -349,6 +420,15 @@ api.declare({
        });
       });
     });
+  }).catch(function(err) {
+    if (err && err.code === 'TaskIdConflict') {
+      return res.status(409).json({
+        message:  "Different TaskId with given TaskId already " +
+                  "exists, if this your attempt at an idempotent operation " +
+                  "then you've failed!"
+      });
+    }
+    throw err;
   });
 });
 
