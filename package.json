@@ -16,11 +16,11 @@
     "debug":                            "2.0.0",
     "taskcluster-client":               "taskcluster/taskcluster-client#8daaaca9fb",
     "taskcluster-base":                 "0.6.1",
-    "azure-table-node":                 "1.4.1"
+    "azure-table-node":                 "1.4.1",
+    "slugid":                           "1.0.3"
   },
   "devDependencies": {
-    "mocha":                            "1.21.4",
-    "slugid":                           "1.0.3"
+    "mocha":                            "1.21.4"
   },
   "engines": {
     "node":                             "0.10.x"
