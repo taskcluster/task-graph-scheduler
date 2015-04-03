@@ -382,7 +382,7 @@ api.declare({
                 t2.deadline.getTime() !== task.deadline.getTime() ||
                 !_.isEqual(t2.requires, task.requires) ||
                 !_.isEqual(t2.dependents, task.dependents)) {
-                debug("OLD: %j != %j", {
+                debug("[TASK-EXTEND-ERROR] new-task: %j != %j   <-- old-task", {
                   rerunsAllowed:  task.rerunsAllowed,
                   deadline:       task.deadline.getTime(),
                   requires:       task.requires,
