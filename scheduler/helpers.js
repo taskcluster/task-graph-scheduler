@@ -223,7 +223,7 @@ exports.prepareTasks = function(input, options) {
         });
 
         // Add new dependent tasks to dependents
-        this.dependents = this.dependents.concat(newDependents);
+        this.dependents = _.union(this.dependents, newDependents);
       });
     })).then(function() {
       return {

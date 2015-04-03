@@ -382,6 +382,17 @@ api.declare({
                 t2.deadline.getTime() !== task.deadline.getTime() ||
                 !_.isEqual(t2.requires, task.requires) ||
                 !_.isEqual(t2.dependents, task.dependents)) {
+                debug("OLD: %j != %j", {
+                  rerunsAllowed:  task.rerunsAllowed,
+                  deadline:       task.deadline.getTime(),
+                  requires:       task.requires,
+                  dependents:     task.dependents
+                }, {
+                  rerunsAllowed:  t2.rerunsAllowed,
+                  deadline:       t2.deadline.getTime(),
+                  requires:       t2.requires,
+                  dependents:     t2.dependents
+                });
                 var err = new Error("Conflict with existing task in taskGraph");
                 err.code = 'TaskIdConflict';
                 throw err;
