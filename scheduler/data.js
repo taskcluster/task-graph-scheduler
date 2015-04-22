@@ -3,8 +3,8 @@ var assert      = require('assert');
 var Promise     = require('promise');
 var azureTable  = require('azure-table-node');
 
-/** Configure a taskgraph Entity subclass */
-var TaskGraph = base.Entity.configure({
+/** Configure a taskgraph LegacyEntity subclass */
+var TaskGraph = base.LegacyEntity.configure({
   mapping: [
     {
       key:              'PartitionKey',
@@ -34,12 +34,12 @@ var ROW_KEY_CONST = 'task-graph';
 /** Create a taskGraph */
 TaskGraph.create = function(properties) {
   properties.RowKey = ROW_KEY_CONST;
-  return base.Entity.create.call(this, properties);
+  return base.LegacyEntity.create.call(this, properties);
 };
 
 /** Load taskGraph from taskGraphId */
 TaskGraph.load = function(taskGraphId) {
-  return base.Entity.load.call(this, taskGraphId, ROW_KEY_CONST);
+  return base.LegacyEntity.load.call(this, taskGraphId, ROW_KEY_CONST);
 };
 
 /** Get task-graph status structure */
@@ -59,7 +59,7 @@ TaskGraph.configure = function(options) {
   assert(options.schedulerId, "schedulerId must be given!");
 
   // Configure class as Entity.configure would
-  var Class = base.Entity.configure.call(this, options);
+  var Class = base.LegacyEntity.configure.call(this, options);
 
   // Add property schedulerId
   Class.prototype.schedulerId = options.schedulerId;
@@ -74,7 +74,7 @@ exports.TaskGraph = TaskGraph;
 
 
 /** Configure a task Entity subclass */
-var Task = base.Entity.configure({
+var Task = base.LegacyEntity.configure({
   mapping: [
     {
       key:                  'PartitionKey',
@@ -99,12 +99,12 @@ var Task = base.Entity.configure({
 
 /** Create a task */
 Task.create = function(properties) {
-  return base.Entity.create.call(this, properties);
+  return base.LegacyEntity.create.call(this, properties);
 };
 
 /** Load task from taskGraphId and taskId */
 Task.load = function(taskGraphId, taskId) {
-  return base.Entity.load.call(this, taskGraphId, taskId);
+  return base.LegacyEntity.load.call(this, taskGraphId, taskId);
 };
 
 /** Load all tasks for a given task-graph */

@@ -171,9 +171,7 @@ suite('scheduler (inspect)', function() {
     }).then(function() {
       taskBCanBeScheduled = true;
       debug("### Report task A completed");
-      return subject.queue.reportCompleted(taskIdA, 0, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskIdA, 0);
     }).then(function() {
       debug("### Waiting for taskB to become pending");
       return taskBPending.message;

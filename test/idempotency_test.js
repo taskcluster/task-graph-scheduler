@@ -205,7 +205,7 @@ suite('scheduler (createTaskGraph is idempotent)', function() {
           workerId:     'dummy-test-worker-id'
         });
       }).then(function() {
-        return subject.queue.reportCompleted(taskIdA, 0, {success: true});
+        return subject.queue.reportCompleted(taskIdA, 0);
       });
     }).then(function() {
       debug("Wait for TaskB to be pending, claim and reportCompleted");
@@ -215,7 +215,7 @@ suite('scheduler (createTaskGraph is idempotent)', function() {
           workerId:     'dummy-test-worker-id'
         });
       }).then(function() {
-        return subject.queue.reportCompleted(taskIdB, 0, {success: true});
+        return subject.queue.reportCompleted(taskIdB, 0);
       });
     }).then(function() {
       debug("Wait for TaskC to be pending, claim and reportCompleted");
@@ -226,7 +226,7 @@ suite('scheduler (createTaskGraph is idempotent)', function() {
         });
       }).then(function() {
         taskGraphCanFinishNow = true;
-        return subject.queue.reportCompleted(taskIdC, 0, {success: true});
+        return subject.queue.reportCompleted(taskIdC, 0);
       });
     }).then(function() {
       debug("Wait for taskGraph to be finished");

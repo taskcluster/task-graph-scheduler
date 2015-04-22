@@ -201,9 +201,7 @@ suite('scheduler (extend)', function() {
     }).then(function() {
       debug("### Report task A completed");
       taskBCanBeScheduled = true;
-      return subject.queue.reportCompleted(taskIdA, 0, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskIdA, 0);
     }).then(function() {
       debug("### Waiting for taskB to become pending");
       return taskBPending.message;
@@ -217,9 +215,7 @@ suite('scheduler (extend)', function() {
       return taskGraphFinished.ready;
     }).then(function() {
       taskGraphCanFinishNow = true;
-      return subject.queue.reportCompleted(taskIdB, 0, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskIdB, 0);
     }).then(function() {
       debug("### Waiting for task-graph to be finished");
       return taskGraphFinished.message;

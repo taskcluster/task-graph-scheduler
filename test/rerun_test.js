@@ -128,10 +128,8 @@ suite('scheduler (rerun)', function() {
         taskId:   taskId
       }));
       return taskPending.ready.then(function() {
-        debug("### Report task completed (unsuccessfully)");
-        return subject.queue.reportCompleted(taskId, 0, {
-          success: false
-        }).then(function() {
+        debug("### Report task failed");
+        return subject.queue.reportFailed(taskId, 0).then(function() {
           debug("### Wait for task to become pending again");
           return taskPending.message;
         });
@@ -148,9 +146,7 @@ suite('scheduler (rerun)', function() {
     }).then(function() {
       taskGraphCanFinishNow = true;
       debug("### Report task completed (successfully)");
-      return subject.queue.reportCompleted(taskId, 1, {
-        success: true
-      });
+      return subject.queue.reportCompleted(taskId, 1);
     }).then(function() {
       debug("### Waiting for task-graph to be finished");
       return taskGraphFinished.message;
@@ -218,10 +214,8 @@ suite('scheduler (rerun)', function() {
         taskId:   taskId
       }));
       return taskPending.ready.then(function() {
-        debug("### Report task completed (unsuccessfully)");
-        return subject.queue.reportCompleted(taskId, 0, {
-          success: false
-        }).then(function() {
+        debug("### Report task failed");
+        return subject.queue.reportFailed(taskId, 0).then(function() {
           debug("### Wait for task to become pending again");
           return taskPending.message;
         });
@@ -237,10 +231,8 @@ suite('scheduler (rerun)', function() {
       return helper.sleep(500);
     }).then(function() {
       taskGraphCanBlockNow = true;
-      debug("### Report task completed (unsuccessfully)");
-      return subject.queue.reportCompleted(taskId, 1, {
-        success: false
-      });
+      debug("### Report task failed");
+      return subject.queue.reportFailed(taskId, 1);
     }).then(function() {
       debug("### Waiting for task-graph to be blocked");
       return taskGraphBlocked.message;
