@@ -10,7 +10,6 @@ var taskcluster = require('taskcluster-client');
  *
  * This helper will do the following:
  *  - Validate semantics of input
- *  - Validate scopes
  *  - Upload tasks to taskPurUrls from queue
  *  - Update `dependents` for existing tasks
  *  - Construct JSON for `Task.create()`
@@ -183,8 +182,9 @@ exports.prepareTasks = function(input, options) {
       taskNode.taskId,
       taskNode.task
     ).catch(function(err) {
-      // Handle authentication as these happen when the task-graph wasn't given
-      // enough scopes and hence we couldn't defineTask. It's 400 error.
+      // The `queue` instance was created with authorizedScopes set to the task
+      // graph's scopes, so the new task's scopes must satisfy the task graph's
+      // scopes.  When these scopes are insufficient, the result is a 401 error.
       if (err.statusCode === 401) {
         return queueErrors.push({
           message:  err.message,
