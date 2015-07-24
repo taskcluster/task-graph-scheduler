@@ -145,10 +145,20 @@
       "description":            "Arbitrary key-value tags (only strings limited to 4k)",
       "type":                   "object",
       "additionalProperties":   {"type": "string", "maxLength": 4096}
+    },
+    "scopes": {
+      "title":  "Scopes",
+      "description": "List of scopes (or scope-patterns) that tasks of the task-graph is authorized to use.",
+      "type": "array",
+      "items": {
+        "title": "Scope",
+        "description": "A scope (or scope-patterns) which a task of the task-graph is authorized to use. This can be a string or a string ending with `*` which will authorize all scopes for which the string is a prefix.",
+        "type": "string"
+      }
     }
   },
   "additionalProperties":   false,
   "required": [
-    "status", "tasks", "metadata", "tags"
+    "status", "tasks", "metadata", "tags", "scopes"
   ]
 }

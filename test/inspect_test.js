@@ -197,6 +197,10 @@ suite('scheduler (inspect)', function() {
       assert(result.tags.MyTestTag == "Hello World",    "Got tag");
       assert(result.status.state == 'running',          "got right state");
       assert(result.tasks.length == 2,                  "got tasks");
+      assert(result.scopes.length === 1, "Expected one scope");
+      assert(result.scopes.indexOf(
+              "queue:define-task:dummy-test-provisioner/dummy-test-worker-type"
+             ) !== -1, "Expected scope didn't match");
       result.tasks.forEach(function(task) {
         if (task.taskId === taskIdA) {
           debug("taskA: %j", task);
