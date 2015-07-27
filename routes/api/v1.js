@@ -554,7 +554,8 @@ api.declare({
       status:   taskGraph.status(),
       tasks:    taskData,
       metadata: taskGraph.details.metadata,
-      tags:     taskGraph.details.tags
+      tags:     taskGraph.details.tags,
+      scopes:   taskGraph.scopes
     });
   });
 });
