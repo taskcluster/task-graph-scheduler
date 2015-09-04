@@ -53,7 +53,7 @@ module.exports = {
     queueExchangePrefix:          undefined,
 
     // TaskCluster credentials for this server, these must have scopes:
-    // auth:credentials, queue:*
+    //   queue:*
     // (typically configured using environment variables)
     credentials: {
       clientId:                   undefined,

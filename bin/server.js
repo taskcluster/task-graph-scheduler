@@ -113,7 +113,6 @@ var launch = function(profile) {
       },
       validator:        validator,
       authBaseUrl:      cfg.get('taskcluster:authBaseUrl'),
-      credentials:      cfg.get('taskcluster:credentials'),
       publish:          cfg.get('scheduler:publishMetaData') === 'true',
       baseUrl:          cfg.get('server:publicUrl') + '/v1',
       referencePrefix:  'scheduler/v1/api.json',
