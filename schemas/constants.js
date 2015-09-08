@@ -24,7 +24,7 @@ module.exports = {
   },
 
   // Slugid pattern, for when-ever that is useful
-  "slugid-pattern":  "^[a-zA-Z0-9-_]{22}",
+  "slugid-pattern":  "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
 
   // Task-graph State
   "state": {
