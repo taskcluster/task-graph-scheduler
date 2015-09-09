@@ -1,6 +1,7 @@
 env:
   global:
   - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
+sudo: false
 language: node_js
 node_js:
 - '0.12'
@@ -14,5 +15,5 @@ deploy:
   on:
     repo: taskcluster/task-graph-scheduler
 before_install:
-- openssl aes-256-cbc -K $encrypted_da51d083b616_key -iv $encrypted_da51d083b616_iv
+- openssl aes-256-cbc -K $encrypted_15e469258d4f_key -iv $encrypted_15e469258d4f_iv
   -in task-graph-scheduler.conf.json.enc -out task-graph-scheduler.conf.json -d
