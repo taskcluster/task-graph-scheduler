@@ -5,8 +5,9 @@ suite('validate', function() {
   // Run test cases using schemas testing utility from taskcluster-base
   base.testing.schemas({
     validator: {
-      folder:       path.join(__dirname, '..', 'schemas'),
-      constants:    require('../schemas/constants'),
+      folder:         path.join(__dirname, '..', 'schemas'),
+      constants:      require('../schemas/constants'),
+      schemaPrefix:   'scheduler/v1/',
       preload: [
         'http://schemas.taskcluster.net/queue/v1/create-task-request.json'
       ]
