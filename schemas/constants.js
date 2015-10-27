@@ -20,6 +20,7 @@ module.exports = {
   // Message version numbers
   "message-version": {
     "description":  "Message version",
+    "type":         "integer",
     "enum":         [1]
   },
 
@@ -30,6 +31,7 @@ module.exports = {
   "state": {
     "description":  "Task-graph state, this enum is **frozen** new values will " +
                     "**not** be added.",
+    "type":         "string",
     "enum":         ["running", "blocked", "finished"]
   },
 
