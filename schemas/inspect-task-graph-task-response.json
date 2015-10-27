@@ -56,6 +56,7 @@
     "state": {
       "title":            "Task Node State",
       "description":      "State of the task as considered by the scheduler",
+      "type":             "string",
       "enum": [
         "unscheduled",
         "scheduled",
