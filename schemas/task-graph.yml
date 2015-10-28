@@ -44,7 +44,7 @@ properties:
   metadata:
     title:          "Meta-data"
     description: |
-      Required task metadata"
+      Required task metadata
     type:           object
     properties:
       name:
