@@ -198,7 +198,7 @@ exports.prepareTasks = function(input, options) {
     // authentication scopes whatever...
     if(queueErrors.length > 0) {
       return {
-        message:            "You didn't give the task-graph scopes" +
+        message:            "You didn't give the task-graph scopes " +
                             "allowing it define tasks on the queue.",
         error:              queueErrors
       };
