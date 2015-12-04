@@ -469,6 +469,11 @@ api.declare({
     res.reply({
       status:               taskGraph.status()
     });
+  }).catch(function(err) {
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({message: "task-graph not found!"});
+    }
+    throw err;
   });
 });
 
@@ -499,6 +504,11 @@ api.declare({
       metadata:             taskGraph.details.metadata,
       tags:                 taskGraph.details.tags
     });
+  }).catch(function(err) {
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({message: "task-graph not found!"});
+    }
+    throw err;
   });
 });
 
@@ -558,6 +568,11 @@ api.declare({
       tags:     taskGraph.details.tags,
       scopes:   taskGraph.scopes
     });
+  }).catch(function(err) {
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({message: "task-graph not found!"});
+    }
+    throw err;
   });
 });
 
@@ -601,6 +616,11 @@ api.declare({
       satisfied:    task.details.satisfied,
       dependents:   task.dependents
     });
+  }).catch(function(err) {
+    if (err.code === 'ResourceNotFound') {
+      return res.status(404).json({message: "task-graph not found!"});
+    }
+    throw err;
   });
 });
 
