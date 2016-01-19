@@ -184,8 +184,8 @@ exports.prepareTasks = function(input, options) {
     ).catch(function(err) {
       // The `queue` instance was created with authorizedScopes set to the task
       // graph's scopes, so the new task's scopes must satisfy the task graph's
-      // scopes.  When these scopes are insufficient, the result is a 401 error.
-      if (err.statusCode === 401) {
+      // scopes.  When these scopes are insufficient, the result is 401/403.
+      if (err.statusCode === 401 || err.statusCode === 403) {
         return queueErrors.push({
           message:  err.message,
           error:    err.body
