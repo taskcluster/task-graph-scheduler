@@ -1,8 +1,8 @@
 {
   "id":           "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
-  "title":        "Task-Graph Definition",
-  "description":  "Definition of a task-graph that can be scheduled",
+  "title":        "Task-Graph Extension Request",
+  "description":  "Additional tasks to add to an existing Task-Graph",
   "type":               "object",
   "properties": {
     "tasks":      {"$const": "task-nodes"}
