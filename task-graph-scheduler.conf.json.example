@@ -1,0 +1,11 @@
+{
+  "aws": {
+    "accessKeyId":        "...",
+    "secretAccessKey":    "...",
+    "region":             "us-west-2"
+  },
+  "azure": {
+    "accountName":        "...",
+    "accountKey":         "..."
+  }
+}
