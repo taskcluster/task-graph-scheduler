@@ -17,9 +17,7 @@
     "taskcluster-client":               "^0.22.6",
     "taskcluster-base":                 "0.8.5",
     "azure-table-node":                 "1.4.1",
-    "slugid":                           "1.0.3"
-  },
-  "devDependencies": {
+    "slugid":                           "1.0.3",
     "mocha":                            "1.21.4"
   },
   "engines": {
